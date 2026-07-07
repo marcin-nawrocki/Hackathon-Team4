@@ -35,9 +35,10 @@ var DashboardMap = (function () {
             scrollWheelZoom: false
         });
 
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            subdomains: 'abcd',
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(map);
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -105,6 +106,7 @@ var DashboardMap = (function () {
         addGeoJsonData: addGeoJsonData,
         getLayer: getLayer,
         removeLayer: removeLayer,
-        getMap: function () { return map; }
+        getMap: function () { return map; },
+        invalidateSize: function () { if (map) map.invalidateSize(); }
     };
 })();

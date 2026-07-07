@@ -8,6 +8,7 @@
           crossorigin="" />
 }
 
+<div class="dash-dashboard">
 <section class="dash-stats">
     <div class="dash-stat-card">
         <div class="dash-stat-icon">
@@ -180,6 +181,7 @@
         </div>
     </div>
 </section>
+</div>
 
 @section scripts {
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -193,7 +195,15 @@
             DashboardMap.addGeoJsonLayer(
                 'activity',
                 '@Url.Content("~/Content/data/activity-regions.json")'
-            );
+            ).then(function () {
+                var map = DashboardMap.getMap();
+                if (map) map.invalidateSize();
+            });
+
+            window.addEventListener('resize', function () {
+                var map = DashboardMap.getMap();
+                if (map) map.invalidateSize();
+            });
 
             var accent = '#c4e830';
             var gridColor = 'rgba(255,255,255,0.06)';
@@ -250,7 +260,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false }, tooltip: { enabled: true } }
                 }
             });
