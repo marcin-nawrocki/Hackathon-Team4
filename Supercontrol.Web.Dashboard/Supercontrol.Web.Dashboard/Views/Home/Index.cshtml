@@ -69,14 +69,6 @@
     <div class="dash-dark-card">
         <div class="dash-card-header">
             <h2 class="dash-card-title">Global Booking Origins</h2>
-            <div class="dash-legend dash-map-legend">
-                <span class="dash-legend-item">
-                    <span class="dash-legend-dot high"></span> High volume
-                </span>
-                <span class="dash-legend-item">
-                    <span class="dash-legend-dot low"></span> Low volume
-                </span>
-            </div>
         </div>
         <div class="dash-map-container">
             <div id="dashMap" class="dash-map"></div>
@@ -136,13 +128,7 @@
     <script>
         (function () {
             DashboardMap.init('dashMap', { center: [20, 0], zoom: 2 });
-            DashboardMap.addGeoJsonLayer(
-                'activity',
-                '@Url.Content("~/Content/data/activity-regions.json")'
-            ).then(function () {
-                var map = DashboardMap.getMap();
-                if (map) map.invalidateSize();
-            });
+            DashboardMap.invalidateSize();
 
             window.addEventListener('resize', function () {
                 var map = DashboardMap.getMap();
