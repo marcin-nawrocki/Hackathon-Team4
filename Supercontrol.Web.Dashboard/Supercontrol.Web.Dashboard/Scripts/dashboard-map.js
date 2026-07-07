@@ -67,11 +67,13 @@ var DashboardMap = (function () {
         options = options || {};
 
         map = L.map(containerId, {
-            center: options.center || [48, 12],
-            zoom: options.zoom || 3,
+            center: options.center || [20, 0],
+            zoom: options.zoom != null ? options.zoom : 2,
             zoomControl: false,
             scrollWheelZoom: false,
-            worldCopyJump: true
+            worldCopyJump: true,
+            minZoom: 2,
+            maxZoom: 8
         });
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
@@ -105,8 +107,8 @@ var DashboardMap = (function () {
             .then(function (response) { return response.json(); })
             .then(function (data) {
                 layer.addData(data);
-                if (layer.getBounds().isValid()) {
-                    map.fitBounds(layer.getBounds(), { padding: [40, 40], maxZoom: 4 });
+                if (options.fitToData && layer.getBounds().isValid()) {
+                    map.fitBounds(layer.getBounds(), { padding: [40, 40], maxZoom: options.fitMaxZoom || 4 });
                 }
                 return layer;
             });
