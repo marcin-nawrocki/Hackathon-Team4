@@ -37,7 +37,7 @@ body.dashboard-body {
 
 .dash-dashboard {
     display: grid;
-    grid-template-rows: auto 1fr 1fr;
+    grid-template-rows: auto 1fr 1fr auto;
     gap: 12px;
     height: 100%;
     min-height: 0;
@@ -417,6 +417,72 @@ body.dashboard-body {
     color: var(--dash-text-primary);
 }
 
+/* Live bookings feed */
+.dash-live-section {
+    min-height: 0;
+}
+
+.dash-live-table {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.dash-live-row {
+    display: grid;
+    grid-template-columns: 90px 1.4fr 1fr 1fr 90px 90px;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 4px;
+    border-bottom: 1px solid var(--dash-border);
+    font-size: 12px;
+}
+
+.dash-live-row:last-child {
+    border-bottom: none;
+}
+
+.dash-live-row.header {
+    color: var(--dash-text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding-bottom: 8px;
+}
+
+.dash-live-channel {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--dash-card-alt);
+    border: 1px solid var(--dash-border);
+    color: var(--dash-text-secondary);
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.dash-live-empty {
+    color: var(--dash-text-muted);
+    font-size: 12px;
+    padding: 12px 4px;
+}
+
+.dash-live-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--dash-positive);
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.7);
+    margin-right: 6px;
+    animation: dash-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes dash-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
 @media (max-width: 1024px) {
     .dash-dark-section,
     .dash-charts-section {
@@ -427,8 +493,17 @@ body.dashboard-body {
         grid-template-columns: 1fr;
     }
 
+    .dash-live-row {
+        grid-template-columns: 70px 1.2fr 1fr 80px;
+    }
+
+    .dash-live-row span:nth-child(4),
+    .dash-live-row span:nth-child(6) {
+        display: none;
+    }
+
     .dash-dashboard {
-        grid-template-rows: auto auto auto;
+        grid-template-rows: auto auto auto auto;
         overflow-y: auto;
     }
 

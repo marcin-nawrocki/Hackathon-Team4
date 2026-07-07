@@ -1,5 +1,16 @@
-﻿@{
+@model Supercontrol.Web.Dashboard.Models.DashboardViewModel
+@using System.Linq
+@{
     ViewBag.Title = "Dashboard";
+
+    string FormatChange(double? pct)
+    {
+        if (!pct.HasValue) return null;
+        var sign = pct.Value >= 0 ? "+" : "";
+        return sign + pct.Value.ToString("0.0") + "%";
+    }
+
+    string ChangeClass(double? pct) => pct.HasValue && pct.Value < 0 ? "negative" : "positive";
 }
 
 @section styles {
@@ -19,10 +30,11 @@
             </svg>
         </div>
         <div class="dash-stat-content">
-            <div class="dash-stat-label">November Performance</div>
-            <div class="dash-stat-value">£24,580</div>
+            <div class="dash-stat-label">Bookings today</div>
+            <div class="dash-stat-value" id="statBookingsToday">@Model.BookingsToday.ToString("N0")</div>
         </div>
-        <span class="dash-stat-badge dark">+12.4%</span>
+        @{ var changeText = FormatChange(Model.BookingsTodayChangePercent); }
+        <span class="dash-stat-badge dark" id="statBookingsTodayChange">@(changeText ?? "—")</span>
     </div>
     <div class="dash-stat-card">
         <div class="dash-stat-icon">
@@ -31,10 +43,10 @@
             </svg>
         </div>
         <div class="dash-stat-content">
-            <div class="dash-stat-label">Enquiries</div>
-            <div class="dash-stat-value">New</div>
+            <div class="dash-stat-label">New enquiries today</div>
+            <div class="dash-stat-value" id="statEnquiries">@Model.EnquiriesToday.ToString("N0")</div>
         </div>
-        <span class="dash-stat-badge count">9</span>
+        <span class="dash-stat-badge count" id="statEnquiriesBadge">@Model.EnquiriesToday.ToString("N0")</span>
     </div>
     <div class="dash-stat-card">
         <div class="dash-stat-icon">
@@ -46,10 +58,10 @@
             </svg>
         </div>
         <div class="dash-stat-content">
-            <div class="dash-stat-label">Calendar</div>
-            <div class="dash-stat-value">July 2026</div>
+            <div class="dash-stat-label">Bookings this week</div>
+            <div class="dash-stat-value" id="statBookingsWeek">@Model.BookingsThisWeek.ToString("N0")</div>
         </div>
-        <span class="dash-stat-badge count">31</span>
+        <span class="dash-stat-badge count" id="statLiveHour" title="Booked in the last hour">@Model.LiveLastHour.ToString("N0")</span>
     </div>
 </section>
 
@@ -73,64 +85,23 @@
     <div class="dash-dark-card">
         <div class="dash-card-header">
             <h2 class="dash-card-title">Top Locations</h2>
+            <div class="dash-card-subtitle">Where bookers are from (7 days)</div>
         </div>
-        <div class="dash-locations">
-            <div class="dash-location-item">
-                <span class="dash-location-rank">1</span>
-                <span class="dash-location-flag">🇩🇪</span>
-                <span class="dash-location-name">Germany</span>
-                <span class="dash-location-value">7,456</span>
-                <span class="dash-location-change positive">+12.5%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">2</span>
-                <span class="dash-location-flag">🇬🇧</span>
-                <span class="dash-location-name">United Kingdom</span>
-                <span class="dash-location-value">5,632</span>
-                <span class="dash-location-change positive">+8.3%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">3</span>
-                <span class="dash-location-flag">🇵🇱</span>
-                <span class="dash-location-name">Poland</span>
-                <span class="dash-location-value">2,497</span>
-                <span class="dash-location-change positive">+11.2%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">4</span>
-                <span class="dash-location-flag">🇳🇱</span>
-                <span class="dash-location-name">Netherlands</span>
-                <span class="dash-location-value">1,456</span>
-                <span class="dash-location-change positive">+7.1%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">5</span>
-                <span class="dash-location-flag">🇫🇷</span>
-                <span class="dash-location-name">France</span>
-                <span class="dash-location-value">1,203</span>
-                <span class="dash-location-change positive">+5.8%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">6</span>
-                <span class="dash-location-flag">🇺🇸</span>
-                <span class="dash-location-name">USA</span>
-                <span class="dash-location-value">987</span>
-                <span class="dash-location-change positive">+3.2%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">7</span>
-                <span class="dash-location-flag">🇦🇹</span>
-                <span class="dash-location-name">Austria</span>
-                <span class="dash-location-value">654</span>
-                <span class="dash-location-change negative">-1.4%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">8</span>
-                <span class="dash-location-flag">🇨🇭</span>
-                <span class="dash-location-name">Switzerland</span>
-                <span class="dash-location-value">521</span>
-                <span class="dash-location-change positive">+2.1%</span>
-            </div>
+        <div class="dash-locations" id="topLocations">
+            @if (!Model.TopCountries.Any())
+            {
+                <div class="dash-live-empty">No booking-origin data in the last 7 days.</div>
+            }
+            @foreach (var loc in Model.TopCountries)
+            {
+                <div class="dash-location-item">
+                    <span class="dash-location-rank">@(Model.TopCountries.IndexOf(loc) + 1)</span>
+                    <span class="dash-location-flag">@loc.Flag</span>
+                    <span class="dash-location-name">@loc.Name</span>
+                    <span class="dash-location-value">@loc.Value.ToString("N0")</span>
+                    <span class="dash-location-change @ChangeClass(loc.ChangePercent)">@(FormatChange(loc.ChangePercent) ?? "n/a")</span>
+                </div>
+            }
         </div>
     </div>
 </section>
@@ -139,8 +110,8 @@
     <div class="dash-dark-card">
         <div class="dash-card-header">
             <div>
-                <h2 class="dash-card-title">Daily performance</h2>
-                <div class="dash-card-subtitle">Measured by performance of devices</div>
+                <h2 class="dash-card-title">Daily bookings</h2>
+                <div class="dash-card-subtitle">Real bookings placed per day, last 14 days</div>
             </div>
         </div>
         <div class="dash-chart-container">
@@ -150,34 +121,52 @@
     <div class="dash-dark-card">
         <div class="dash-card-header">
             <div>
-                <h2 class="dash-card-title">Partner Distribution</h2>
-                <div class="dash-card-subtitle">Measured by partner contribution</div>
+                <h2 class="dash-card-title">Channel Distribution</h2>
+                <div class="dash-card-subtitle">Where bookings come from (7 days)</div>
             </div>
         </div>
         <div class="dash-donut-container">
             <div class="dash-donut-chart">
                 <canvas id="partnerChart"></canvas>
                 <div class="dash-donut-center">
-                    <div class="dash-donut-value">14,198</div>
+                    <div class="dash-donut-value" id="donutTotal">@Model.Channels.Sum(c => c.BookingCount).ToString("N0")</div>
                 </div>
             </div>
-            <div class="dash-donut-legend">
-                <div class="dash-donut-legend-item">
-                    <span class="dash-donut-legend-dot" style="background: #3b82f6;"></span>
-                    <span class="dash-donut-legend-label">Direct</span>
-                    <span class="dash-donut-legend-value">42%</span>
-                </div>
-                <div class="dash-donut-legend-item">
-                    <span class="dash-donut-legend-dot" style="background: #ef4444;"></span>
-                    <span class="dash-donut-legend-label">Agents</span>
-                    <span class="dash-donut-legend-value">35%</span>
-                </div>
-                <div class="dash-donut-legend-item">
-                    <span class="dash-donut-legend-dot" style="background: #2dd4bf;"></span>
-                    <span class="dash-donut-legend-label">Affiliates</span>
-                    <span class="dash-donut-legend-value">23%</span>
-                </div>
+            <div class="dash-donut-legend" id="donutLegend"></div>
+        </div>
+    </div>
+</section>
+
+<section class="dash-dark-section dash-live-section" style="grid-template-columns: 1fr;">
+    <div class="dash-dark-card">
+        <div class="dash-card-header">
+            <h2 class="dash-card-title"><span class="dash-live-dot"></span>Live bookings</h2>
+            <div class="dash-card-subtitle" id="liveUpdatedAt">Updating every 30s</div>
+        </div>
+        <div class="dash-live-table" id="liveBookingsTable">
+            <div class="dash-live-row header">
+                <span>Booked</span>
+                <span>Property / Owner</span>
+                <span>Guest from</span>
+                <span>Stay dates</span>
+                <span>Channel</span>
+                <span>Guests</span>
             </div>
+            @if (!Model.RecentBookings.Any())
+            {
+                <div class="dash-live-empty">No recent bookings found.</div>
+            }
+            @foreach (var b in Model.RecentBookings)
+            {
+                <div class="dash-live-row">
+                    <span title="@b.BookingDate">@(b.BookingDate?.ToString("dd MMM HH:mm"))</span>
+                    <span>@(b.CottageName ?? "—") &middot; @b.OwnerCompany</span>
+                    <span>@(string.IsNullOrWhiteSpace(b.CustomerTown) ? (b.CustomerCountry ?? "—") : b.CustomerTown + ", " + b.CustomerCountry)</span>
+                    <span>@(b.CheckIn.HasValue ? b.CheckIn.Value.ToString("dd MMM") : "—")@(b.CheckOut.HasValue ? " – " + b.CheckOut.Value.ToString("dd MMM") : "")</span>
+                    <span class="dash-live-channel">@(string.IsNullOrWhiteSpace(b.SourceID) ? b.BookingType : b.SourceID)</span>
+                    <span>@(((b.Adults ?? 0) + (b.Children ?? 0)) > 0 ? ((b.Adults ?? 0) + (b.Children ?? 0)).ToString() : "—")</span>
+                </div>
+            }
         </div>
     </div>
 </section>
@@ -191,14 +180,21 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
         (function () {
-            DashboardMap.init('dashMap', { center: [48, 12], zoom: 3 });
-            DashboardMap.addGeoJsonLayer(
-                'activity',
-                '@Url.Content("~/Content/data/activity-regions.json")'
-            ).then(function () {
-                var map = DashboardMap.getMap();
-                if (map) map.invalidateSize();
-            });
+            var REFRESH_MS = 30000;
+            var donutColors = ['#3b82f6', '#ef4444', '#2dd4bf', '#c4e830', '#a855f7', '#f59e0b'];
+
+            DashboardMap.init('dashMap', { center: [30, 10], zoom: 2 });
+
+            function loadMap() {
+                var existing = DashboardMap.getLayer('activity');
+                if (existing) DashboardMap.removeLayer('activity');
+                DashboardMap.addGeoJsonLayer('activity', '@Url.Action("BookingOrigins", "Home")?t=' + Date.now())
+                    .then(function () {
+                        var map = DashboardMap.getMap();
+                        if (map) map.invalidateSize();
+                    });
+            }
+            loadMap();
 
             window.addEventListener('resize', function () {
                 var map = DashboardMap.getMap();
@@ -214,12 +210,15 @@
             gradient.addColorStop(0, 'rgba(196, 232, 48, 0.3)');
             gradient.addColorStop(1, 'rgba(196, 232, 48, 0)');
 
-            new Chart(perfCtx, {
+            var trendData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(
+                Model.Trend.Select(t => new { label = t.Day.ToString("dd MMM"), value = t.BookingCount })));
+
+            var performanceChart = new Chart(perfCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: trendData.map(function (d) { return d.label; }),
                     datasets: [{
-                        data: [320, 410, 380, 520, 490, 610, 580, 450, 530, 620, 590, 710, 680, 750],
+                        data: trendData.map(function (d) { return d.value; }),
                         borderColor: accent,
                         backgroundColor: gradient,
                         borderWidth: 2,
@@ -247,13 +246,16 @@
                 }
             });
 
-            new Chart(document.getElementById('partnerChart'), {
+            var channelData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(
+                Model.Channels.Select(c => new { label = c.Channel, value = c.BookingCount })));
+
+            var partnerChart = new Chart(document.getElementById('partnerChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Direct', 'Agents', 'Affiliates'],
+                    labels: channelData.map(function (d) { return d.label; }),
                     datasets: [{
-                        data: [42, 35, 23],
-                        backgroundColor: ['#3b82f6', '#ef4444', '#2dd4bf'],
+                        data: channelData.map(function (d) { return d.value; }),
+                        backgroundColor: channelData.map(function (_, i) { return donutColors[i % donutColors.length]; }),
                         borderWidth: 0,
                         cutout: '75%'
                     }]
@@ -264,6 +266,106 @@
                     plugins: { legend: { display: false }, tooltip: { enabled: true } }
                 }
             });
+
+            function renderDonutLegend(channels) {
+                var total = channels.reduce(function (s, c) { return s + c.value; }, 0);
+                var html = channels.map(function (c, i) {
+                    var pct = total > 0 ? Math.round((c.value / total) * 100) : 0;
+                    return '<div class="dash-donut-legend-item">' +
+                        '<span class="dash-donut-legend-dot" style="background:' + donutColors[i % donutColors.length] + ';"></span>' +
+                        '<span class="dash-donut-legend-label">' + c.label + '</span>' +
+                        '<span class="dash-donut-legend-value">' + pct + '%</span></div>';
+                }).join('');
+                document.getElementById('donutLegend').innerHTML = html;
+                document.getElementById('donutTotal').textContent = total.toLocaleString();
+            }
+            renderDonutLegend(channelData);
+
+            function fmtChange(pct) {
+                if (pct === null || pct === undefined) return 'n/a';
+                var sign = pct >= 0 ? '+' : '';
+                return sign + pct.toFixed(1) + '%';
+            }
+
+            function renderTopLocations(countries) {
+                var el = document.getElementById('topLocations');
+                if (!countries.length) {
+                    el.innerHTML = '<div class="dash-live-empty">No booking-origin data in the last 7 days.</div>';
+                    return;
+                }
+                el.innerHTML = countries.map(function (c, i) {
+                    var cls = (c.ChangePercent || 0) < 0 ? 'negative' : 'positive';
+                    return '<div class="dash-location-item">' +
+                        '<span class="dash-location-rank">' + (i + 1) + '</span>' +
+                        '<span class="dash-location-flag">' + c.Flag + '</span>' +
+                        '<span class="dash-location-name">' + c.Name + '</span>' +
+                        '<span class="dash-location-value">' + c.Value.toLocaleString() + '</span>' +
+                        '<span class="dash-location-change ' + cls + '">' + fmtChange(c.ChangePercent) + '</span></div>';
+                }).join('');
+            }
+
+            function renderLiveFeed(rows) {
+                var el = document.getElementById('liveBookingsTable');
+                var header = '<div class="dash-live-row header"><span>Booked</span><span>Property / Owner</span>' +
+                    '<span>Guest from</span><span>Stay dates</span><span>Channel</span><span>Guests</span></div>';
+                if (!rows.length) {
+                    el.innerHTML = header + '<div class="dash-live-empty">No recent bookings found.</div>';
+                    return;
+                }
+                el.innerHTML = header + rows.map(function (b) {
+                    var booked = b.BookingDate ? new Date(b.BookingDate).toLocaleString([], { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+                    var checkIn = b.CheckIn ? new Date(b.CheckIn).toLocaleDateString([], { day: '2-digit', month: 'short' }) : null;
+                    var checkOut = b.CheckOut ? new Date(b.CheckOut).toLocaleDateString([], { day: '2-digit', month: 'short' }) : null;
+                    var stay = checkIn ? (checkIn + (checkOut ? ' – ' + checkOut : '')) : '—';
+                    var from = b.CustomerTown ? (b.CustomerTown + ', ' + (b.CustomerCountry || '')) : (b.CustomerCountry || '—');
+                    var guests = ((b.Adults || 0) + (b.Children || 0)) || '—';
+                    var channel = b.SourceID && b.SourceID.trim() ? b.SourceID : b.BookingType;
+                    return '<div class="dash-live-row">' +
+                        '<span>' + booked + '</span>' +
+                        '<span>' + (b.CottageName || '—') + ' &middot; ' + (b.OwnerCompany || '') + '</span>' +
+                        '<span>' + from + '</span>' +
+                        '<span>' + stay + '</span>' +
+                        '<span class="dash-live-channel">' + channel + '</span>' +
+                        '<span>' + guests + '</span></div>';
+                }).join('');
+            }
+
+            function refresh() {
+                fetch('@Url.Action("LiveSummary", "Home")')
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        document.getElementById('statBookingsToday').textContent = data.BookingsToday.toLocaleString();
+                        document.getElementById('statBookingsTodayChange').textContent = fmtChange(data.BookingsTodayChangePercent);
+                        document.getElementById('statEnquiries').textContent = data.EnquiriesToday.toLocaleString();
+                        document.getElementById('statEnquiriesBadge').textContent = data.EnquiriesToday.toLocaleString();
+                        document.getElementById('statBookingsWeek').textContent = data.BookingsThisWeek.toLocaleString();
+                        document.getElementById('statLiveHour').textContent = data.LiveLastHour.toLocaleString();
+
+                        renderTopLocations(data.TopCountries || []);
+                        renderLiveFeed(data.RecentBookings || []);
+
+                        var trend = (data.Trend || []).map(function (t) {
+                            return { label: new Date(t.Day).toLocaleDateString([], { day: '2-digit', month: 'short' }), value: t.BookingCount };
+                        });
+                        performanceChart.data.labels = trend.map(function (d) { return d.label; });
+                        performanceChart.data.datasets[0].data = trend.map(function (d) { return d.value; });
+                        performanceChart.update('none');
+
+                        var channels = (data.Channels || []).map(function (c) { return { label: c.Channel, value: c.BookingCount }; });
+                        partnerChart.data.labels = channels.map(function (d) { return d.label; });
+                        partnerChart.data.datasets[0].data = channels.map(function (d) { return d.value; });
+                        partnerChart.data.datasets[0].backgroundColor = channels.map(function (_, i) { return donutColors[i % donutColors.length]; });
+                        partnerChart.update('none');
+                        renderDonutLegend(channels);
+
+                        loadMap();
+
+                        document.getElementById('liveUpdatedAt').textContent = 'Updated ' + new Date().toLocaleTimeString();
+                    })
+                    .catch(function (err) { console.error('Dashboard refresh failed', err); });
+            }
+
+            setInterval(refresh, REFRESH_MS);
         })();
     </script>
 }
