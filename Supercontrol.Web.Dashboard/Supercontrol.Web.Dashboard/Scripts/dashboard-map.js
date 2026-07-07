@@ -2,16 +2,54 @@ var DashboardMap = (function () {
     var map = null;
     var layers = {};
 
-    function pointStyle(feature) {
+    var COLORS = {
+        glow: '#22d3ee',
+        high: '#99f6e4',
+        highStroke: '#ccfbf1',
+        low: '#2dd4bf',
+        lowStroke: '#115e59'
+    };
+
+    function createGlowMarker(feature, latlng) {
         var isHigh = feature.properties.score === 'high';
-        return {
-            radius: isHigh ? 9 : 6,
-            fillColor: isHigh ? '#c4e830' : '#374151',
-            color: isHigh ? '#c4e830' : '#4b5563',
-            weight: 1,
-            opacity: 1,
-            fillOpacity: isHigh ? 0.85 : 0.6
-        };
+        var group = L.featureGroup();
+
+        if (isHigh) {
+            L.circleMarker(latlng, {
+                radius: 22,
+                fillColor: COLORS.glow,
+                fillOpacity: 0.1,
+                stroke: false,
+                interactive: false
+            }).addTo(group);
+
+            L.circleMarker(latlng, {
+                radius: 14,
+                fillColor: COLORS.glow,
+                fillOpacity: 0.2,
+                stroke: false,
+                interactive: false
+            }).addTo(group);
+
+            L.circleMarker(latlng, {
+                radius: 8,
+                fillColor: COLORS.glow,
+                fillOpacity: 0.35,
+                stroke: false,
+                interactive: false
+            }).addTo(group);
+        }
+
+        L.circleMarker(latlng, {
+            radius: isHigh ? 5 : 3.5,
+            fillColor: isHigh ? COLORS.high : COLORS.low,
+            color: isHigh ? COLORS.highStroke : COLORS.lowStroke,
+            weight: isHigh ? 1.5 : 1,
+            fillOpacity: isHigh ? 0.95 : 0.75,
+            className: isHigh ? 'map-marker-high' : 'map-marker-low'
+        }).addTo(group);
+
+        return group;
     }
 
     function bindPopup(feature, layer) {
@@ -29,13 +67,14 @@ var DashboardMap = (function () {
         options = options || {};
 
         map = L.map(containerId, {
-            center: options.center || [50, 10],
-            zoom: options.zoom || 4,
+            center: options.center || [48, 12],
+            zoom: options.zoom || 3,
             zoomControl: false,
-            scrollWheelZoom: false
+            scrollWheelZoom: false,
+            worldCopyJump: true
         });
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
             subdomains: 'abcd',
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -52,7 +91,8 @@ var DashboardMap = (function () {
         var options = customOptions || {};
         var layer = L.geoJSON(null, {
             pointToLayer: function (feature, latlng) {
-                return L.circleMarker(latlng, options.style ? options.style(feature) : pointStyle(feature));
+                if (options.pointToLayer) return options.pointToLayer(feature, latlng);
+                return createGlowMarker(feature, latlng);
             },
             onEachFeature: options.onEachFeature || bindPopup,
             style: options.polygonStyle || undefined
@@ -66,7 +106,7 @@ var DashboardMap = (function () {
             .then(function (data) {
                 layer.addData(data);
                 if (layer.getBounds().isValid()) {
-                    map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: 6 });
+                    map.fitBounds(layer.getBounds(), { padding: [40, 40], maxZoom: 4 });
                 }
                 return layer;
             });
@@ -78,7 +118,8 @@ var DashboardMap = (function () {
         var options = customOptions || {};
         var layer = L.geoJSON(data, {
             pointToLayer: function (feature, latlng) {
-                return L.circleMarker(latlng, options.style ? options.style(feature) : pointStyle(feature));
+                if (options.pointToLayer) return options.pointToLayer(feature, latlng);
+                return createGlowMarker(feature, latlng);
             },
             onEachFeature: options.onEachFeature || bindPopup,
             style: options.polygonStyle || undefined

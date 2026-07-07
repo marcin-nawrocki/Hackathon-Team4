@@ -182,12 +182,24 @@ body.dashboard-body {
 }
 
 .dash-legend-dot.high {
-    background: var(--dash-accent);
-    box-shadow: 0 0 6px var(--dash-accent);
+    background: #5eead4;
+    box-shadow: 0 0 6px #22d3ee, 0 0 12px rgba(34, 211, 238, 0.45);
+    width: 11px;
+    height: 11px;
 }
 
 .dash-legend-dot.low {
-    background: #374151;
+    background: #134e4a;
+    width: 7px;
+    height: 7px;
+    box-shadow: 0 0 4px rgba(45, 212, 191, 0.3);
+}
+
+.dash-map-legend {
+    background: rgba(12, 28, 38, 0.75);
+    border: 1px solid rgba(94, 234, 212, 0.12);
+    border-radius: 8px;
+    padding: 6px 12px;
 }
 
 /* Map */
@@ -196,6 +208,7 @@ body.dashboard-body {
     min-height: 0;
     overflow: hidden;
     border-radius: 8px;
+    border: 1px solid rgba(94, 234, 212, 0.08);
 }
 
 .dash-map {
@@ -205,8 +218,16 @@ body.dashboard-body {
 }
 
 .dash-map-container .leaflet-container {
-    background: var(--dash-card);
+    background: #0c1a24;
     font-family: inherit;
+}
+
+.dash-map-container .leaflet-tile-pane {
+    filter: brightness(1.35) contrast(0.95) saturate(1.5) hue-rotate(155deg);
+}
+
+.dash-map-container .leaflet-overlay-pane svg {
+    filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.35));
 }
 
 .dash-map-container .leaflet-control-zoom a {

@@ -56,13 +56,13 @@
 <section class="dash-dark-section">
     <div class="dash-dark-card">
         <div class="dash-card-header">
-            <h2 class="dash-card-title">Status &ndash; Active region</h2>
-            <div class="dash-legend">
+            <h2 class="dash-card-title">Global Booking Origins</h2>
+            <div class="dash-legend dash-map-legend">
                 <span class="dash-legend-item">
-                    <span class="dash-legend-dot high"></span> High score
+                    <span class="dash-legend-dot high"></span> High volume
                 </span>
                 <span class="dash-legend-item">
-                    <span class="dash-legend-dot low"></span> Low score
+                    <span class="dash-legend-dot low"></span> Low volume
                 </span>
             </div>
         </div>
@@ -191,7 +191,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
         (function () {
-            DashboardMap.init('dashMap', { center: [50, 10], zoom: 4 });
+            DashboardMap.init('dashMap', { center: [48, 12], zoom: 3 });
             DashboardMap.addGeoJsonLayer(
                 'activity',
                 '@Url.Content("~/Content/data/activity-regions.json")'
