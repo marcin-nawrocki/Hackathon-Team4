@@ -184,6 +184,7 @@
     <Compile Include="Models\Supercontrol2Context.cs" />
     <Compile Include="Models\TopLocationDto.cs" />
     <Compile Include="Models\AffiliateDto.cs" />
+    <Compile Include="Models\BookingsPerHourDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

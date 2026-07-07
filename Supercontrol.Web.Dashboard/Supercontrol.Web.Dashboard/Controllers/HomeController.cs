@@ -22,6 +22,13 @@ namespace Supercontrol.Web.Dashboard.Controllers
               GROUP BY affiliateId
               ORDER BY c DESC";
 
+        private const string BookingsPerHourSql =
+            @"SELECT COUNT(1) AS c, HOUR(bookingdate) AS h
+              FROM bookings
+              WHERE bookingdate >= '2026-07-01'
+              GROUP BY HOUR(bookingdate)
+              ORDER BY c DESC";
+
         public ActionResult Index()
         {
             using (var db = new Supercontrol2Context())
@@ -32,6 +39,19 @@ namespace Supercontrol.Web.Dashboard.Controllers
 
                 ViewBag.Affiliates = db.Database
                     .SqlQuery<AffiliateDto>(AffiliatesSql)
+                    .ToList();
+
+                var hourlyRaw = db.Database
+                    .SqlQuery<BookingsPerHourDto>(BookingsPerHourSql)
+                    .ToList();
+
+                var hourlyLookup = hourlyRaw.ToDictionary(x => x.H, x => x.C);
+                ViewBag.BookingsPerHour = Enumerable.Range(0, 24)
+                    .Select(h => new BookingsPerHourDto
+                    {
+                        H = h,
+                        C = hourlyLookup.ContainsKey(h) ? hourlyLookup[h] : 0
+                    })
                     .ToList();
             }
 
