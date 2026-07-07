@@ -15,12 +15,23 @@ namespace Supercontrol.Web.Dashboard.Controllers
               GROUP BY customercountry
               ORDER BY c DESC";
 
+        private const string AffiliatesSql =
+            @"SELECT affiliateId, COUNT(1) AS c
+              FROM bookings
+              WHERE bookingdate >= '2026-07-01'
+              GROUP BY affiliateId
+              ORDER BY c DESC";
+
         public ActionResult Index()
         {
             using (var db = new Supercontrol2Context())
             {
                 ViewBag.TopLocations = db.Database
                     .SqlQuery<TopLocationDto>(TopLocationsSql)
+                    .ToList();
+
+                ViewBag.Affiliates = db.Database
+                    .SqlQuery<AffiliateDto>(AffiliatesSql)
                     .ToList();
             }
 
