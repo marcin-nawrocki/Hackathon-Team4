@@ -185,6 +185,7 @@
     <Compile Include="Models\TopLocationDto.cs" />
     <Compile Include="Models\AffiliateDto.cs" />
     <Compile Include="Models\BookingsPerHourDto.cs" />
+    <Compile Include="Models\TotalBookingsDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

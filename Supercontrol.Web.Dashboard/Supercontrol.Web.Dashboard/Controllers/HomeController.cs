@@ -30,6 +30,11 @@ namespace Supercontrol.Web.Dashboard.Controllers
               GROUP BY HOUR(bookingdate)
               ORDER BY c DESC";
 
+        private const string TotalBookingsSql =
+            @"SELECT COUNT(1) AS h
+              FROM bookings
+              WHERE bookingdate >= @p0";
+
         public ActionResult Index(DateTime? fromDate)
         {
             var filterDate = fromDate?.Date ?? new DateTime(2026, 7, 1);
@@ -39,6 +44,10 @@ namespace Supercontrol.Web.Dashboard.Controllers
 
             using (var db = new Supercontrol2Context())
             {
+                ViewBag.TotalBookings = db.Database
+                    .SqlQuery<TotalBookingsDto>(TotalBookingsSql, filterDate)
+                    .FirstOrDefault()?.H ?? 0;
+
                 ViewBag.TopLocations = db.Database
                     .SqlQuery<TopLocationDto>(TopLocationsSql, filterDate)
                     .ToList();
