@@ -10,6 +10,8 @@ namespace Supercontrol.Web.Dashboard.Controllers
     {
         public ActionResult Index()
         {
+            var db = new Models.Supercontrol2Context();
+            var v = db.Database.SqlQuery<int>("SELECT 1").FirstOrDefault();
             return View();
         }
 
