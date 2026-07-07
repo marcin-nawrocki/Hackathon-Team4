@@ -1,0 +1,45 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Berlin", "country": "Germany", "value": 7456, "score": "high", "change": 12.5 },
+      "geometry": { "type": "Point", "coordinates": [13.405, 52.52] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "London", "country": "United Kingdom", "value": 5632, "score": "high", "change": 8.3 },
+      "geometry": { "type": "Point", "coordinates": [-0.128, 51.507] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Warsaw", "country": "Poland", "value": 2497, "score": "high", "change": 11.2 },
+      "geometry": { "type": "Point", "coordinates": [21.012, 52.229] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Amsterdam", "country": "Netherlands", "value": 1456, "score": "high", "change": 7.1 },
+      "geometry": { "type": "Point", "coordinates": [4.904, 52.367] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Paris", "country": "France", "value": 1203, "score": "high", "change": 5.8 },
+      "geometry": { "type": "Point", "coordinates": [2.352, 48.856] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "New York", "country": "USA", "value": 987, "score": "low", "change": 3.2 },
+      "geometry": { "type": "Point", "coordinates": [-74.006, 40.712] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Vienna", "country": "Austria", "value": 654, "score": "low", "change": -1.4 },
+      "geometry": { "type": "Point", "coordinates": [16.373, 48.208] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Zurich", "country": "Switzerland", "value": 521, "score": "low", "change": 2.1 },
+      "geometry": { "type": "Point", "coordinates": [8.541, 47.376] }
+    }
+  ]
+}

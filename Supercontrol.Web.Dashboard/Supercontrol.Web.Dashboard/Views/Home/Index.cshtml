@@ -2,6 +2,12 @@
     ViewBag.Title = "Dashboard";
 }
 
+@section styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin="" />
+}
+
 <section class="dash-stats">
     <div class="dash-stat-card">
         <div class="dash-stat-icon">
@@ -60,29 +66,7 @@
             </div>
         </div>
         <div class="dash-map-container">
-            <svg class="dash-map-svg" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
-                <rect width="800" height="400" fill="#0b141a" />
-                <!-- Simplified world map regions -->
-                <ellipse cx="180" cy="160" rx="90" ry="70" fill="#152028" />
-                <ellipse cx="400" cy="140" rx="60" ry="50" fill="#152028" />
-                <ellipse cx="520" cy="120" rx="50" ry="45" fill="#152028" />
-                <ellipse cx="620" cy="200" rx="70" ry="55" fill="#152028" />
-                <ellipse cx="300" cy="280" rx="55" ry="40" fill="#152028" />
-                <ellipse cx="480" cy="300" rx="45" ry="35" fill="#152028" />
-                <ellipse cx="700" cy="310" rx="50" ry="40" fill="#152028" />
-                <!-- Activity dots -->
-                <circle class="dash-map-dot" cx="400" cy="130" r="6" />
-                <circle class="dash-map-dot" cx="420" cy="125" r="4" />
-                <circle class="dash-map-dot" cx="500" cy="115" r="5" />
-                <circle class="dash-map-dot" cx="515" cy="120" r="7" />
-                <circle class="dash-map-dot" cx="530" cy="110" r="4" />
-                <circle class="dash-map-dot" cx="545" cy="125" r="5" />
-                <circle class="dash-map-dot" cx="560" cy="115" r="3" />
-                <circle class="dash-map-dot" cx="180" cy="155" r="4" />
-                <circle class="dash-map-dot dim" cx="620" cy="195" r="3" />
-                <circle class="dash-map-dot dim" cx="300" cy="275" r="3" />
-                <circle class="dash-map-dot dim" cx="700" cy="305" r="4" />
-            </svg>
+            <div id="dashMap" class="dash-map"></div>
         </div>
     </div>
     <div class="dash-dark-card">
@@ -198,9 +182,19 @@
 </section>
 
 @section scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script src="@Url.Content("~/Scripts/dashboard-map.js")"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
         (function () {
+            DashboardMap.init('dashMap', { center: [50, 10], zoom: 4 });
+            DashboardMap.addGeoJsonLayer(
+                'activity',
+                '@Url.Content("~/Content/data/activity-regions.json")'
+            );
+
             var accent = '#c4e830';
             var gridColor = 'rgba(255,255,255,0.06)';
             var textColor = '#9ca3af';
