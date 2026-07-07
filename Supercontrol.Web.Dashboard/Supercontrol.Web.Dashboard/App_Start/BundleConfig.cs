@@ -23,7 +23,7 @@ namespace Supercontrol.Web.Dashboard
                       "~/Scripts/bootstrap.js"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
-                      "~/Content/bootstrap.css",
+                      "~/Content/dashboard.css",
                       "~/Content/site.css"));
         }
     }
