@@ -303,11 +303,7 @@ body.dashboard-body {
     color: var(--dash-text-muted);
     width: 18px;
     text-align: center;
-}
-
-.dash-location-flag {
-    font-size: 16px;
-    line-height: 1;
+    flex-shrink: 0;
 }
 
 .dash-location-name {
@@ -322,22 +318,7 @@ body.dashboard-body {
 .dash-location-value {
     font-size: 13px;
     font-weight: 600;
-    margin-right: 6px;
-}
-
-.dash-location-change {
-    font-size: 11px;
-    font-weight: 500;
-    min-width: 48px;
-    text-align: right;
-}
-
-.dash-location-change.positive {
-    color: var(--dash-positive);
-}
-
-.dash-location-change.negative {
-    color: var(--dash-negative);
+    margin-left: auto;
 }
 
 /* Charts */

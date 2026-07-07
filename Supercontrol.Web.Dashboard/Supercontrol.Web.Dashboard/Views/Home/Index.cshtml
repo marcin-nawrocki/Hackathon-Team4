@@ -1,5 +1,7 @@
-﻿@{
+﻿@using Supercontrol.Web.Dashboard.Models
+@{
     ViewBag.Title = "Dashboard";
+    var topLocations = ViewBag.TopLocations as List<TopLocationDto> ?? new List<TopLocationDto>();
 }
 
 @section styles {
@@ -75,62 +77,16 @@
             <h2 class="dash-card-title">Top Locations</h2>
         </div>
         <div class="dash-locations">
-            <div class="dash-location-item">
-                <span class="dash-location-rank">1</span>
-                <span class="dash-location-flag">🇩🇪</span>
-                <span class="dash-location-name">Germany</span>
-                <span class="dash-location-value">7,456</span>
-                <span class="dash-location-change positive">+12.5%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">2</span>
-                <span class="dash-location-flag">🇬🇧</span>
-                <span class="dash-location-name">United Kingdom</span>
-                <span class="dash-location-value">5,632</span>
-                <span class="dash-location-change positive">+8.3%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">3</span>
-                <span class="dash-location-flag">🇵🇱</span>
-                <span class="dash-location-name">Poland</span>
-                <span class="dash-location-value">2,497</span>
-                <span class="dash-location-change positive">+11.2%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">4</span>
-                <span class="dash-location-flag">🇳🇱</span>
-                <span class="dash-location-name">Netherlands</span>
-                <span class="dash-location-value">1,456</span>
-                <span class="dash-location-change positive">+7.1%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">5</span>
-                <span class="dash-location-flag">🇫🇷</span>
-                <span class="dash-location-name">France</span>
-                <span class="dash-location-value">1,203</span>
-                <span class="dash-location-change positive">+5.8%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">6</span>
-                <span class="dash-location-flag">🇺🇸</span>
-                <span class="dash-location-name">USA</span>
-                <span class="dash-location-value">987</span>
-                <span class="dash-location-change positive">+3.2%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">7</span>
-                <span class="dash-location-flag">🇦🇹</span>
-                <span class="dash-location-name">Austria</span>
-                <span class="dash-location-value">654</span>
-                <span class="dash-location-change negative">-1.4%</span>
-            </div>
-            <div class="dash-location-item">
-                <span class="dash-location-rank">8</span>
-                <span class="dash-location-flag">🇨🇭</span>
-                <span class="dash-location-name">Switzerland</span>
-                <span class="dash-location-value">521</span>
-                <span class="dash-location-change positive">+2.1%</span>
-            </div>
+            @for (var i = 0; i < topLocations.Count; i++)
+            {
+                var location = topLocations[i];
+                var country = string.IsNullOrWhiteSpace(location.CustomerCountry) ? "Unknown" : location.CustomerCountry;
+                <div class="dash-location-item">
+                    <span class="dash-location-rank">@(i + 1)</span>
+                    <span class="dash-location-name">@country</span>
+                    <span class="dash-location-value">@location.C.ToString("N0")</span>
+                </div>
+            }
         </div>
     </div>
 </section>
