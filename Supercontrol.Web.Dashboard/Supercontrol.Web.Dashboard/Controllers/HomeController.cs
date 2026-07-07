@@ -35,6 +35,12 @@ namespace Supercontrol.Web.Dashboard.Controllers
               FROM bookings
               WHERE bookingdate >= @p0";
 
+        private const string DailyIncomeSql =
+            @"SELECT SUM(bookingfullrate) AS Total
+              FROM bookings
+              LEFT JOIN booking_details ON bookings.bookingId = booking_details.bookingId
+              WHERE bookingdate >= @p0";
+
         public ActionResult Index(DateTime? fromDate)
         {
             var filterDate = fromDate?.Date ?? new DateTime(2026, 7, 1);
@@ -44,6 +50,10 @@ namespace Supercontrol.Web.Dashboard.Controllers
 
             using (var db = new Supercontrol2Context())
             {
+                ViewBag.DailyIncome = db.Database
+                    .SqlQuery<DailyIncomeDto>(DailyIncomeSql, filterDate)
+                    .FirstOrDefault()?.Total ?? 0m;
+
                 ViewBag.TotalBookings = db.Database
                     .SqlQuery<TotalBookingsDto>(TotalBookingsSql, filterDate)
                     .FirstOrDefault()?.H ?? 0;

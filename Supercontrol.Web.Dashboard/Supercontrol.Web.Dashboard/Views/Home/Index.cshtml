@@ -7,6 +7,7 @@
     var fromDate = ViewBag.FromDate as string ?? "2026-07-01";
     var fromDateDisplay = ViewBag.FromDateDisplay as string ?? "1 July 2026";
     var totalBookings = ViewBag.TotalBookings as int? ?? 0;
+    var dailyIncome = ViewBag.DailyIncome as decimal? ?? 0m;
 }
 
 @section styles {
@@ -20,16 +21,14 @@
     <div class="dash-stat-card">
         <div class="dash-stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="20" x2="18" y2="10" />
-                <line x1="12" y1="20" x2="12" y2="4" />
-                <line x1="6" y1="20" x2="6" y2="14" />
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
             </svg>
         </div>
         <div class="dash-stat-content">
-            <div class="dash-stat-label">November Performance</div>
-            <div class="dash-stat-value">£24,580</div>
+            <div class="dash-stat-label">Daily income</div>
+            <div class="dash-stat-value">@dailyIncome.ToString("C0")</div>
         </div>
-        <span class="dash-stat-badge dark">+12.4%</span>
     </div>
     <div class="dash-stat-card">
         <div class="dash-stat-icon">
