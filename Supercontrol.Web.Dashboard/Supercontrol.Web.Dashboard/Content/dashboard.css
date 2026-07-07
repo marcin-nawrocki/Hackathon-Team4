@@ -119,6 +119,42 @@ body.dashboard-body {
     border: 1px solid var(--dash-border);
 }
 
+.dash-stat-card--date {
+    cursor: default;
+}
+
+.dash-stat-card--date .dash-stat-label {
+    display: block;
+    cursor: pointer;
+}
+
+.dash-date-input {
+    width: 100%;
+    margin-top: 4px;
+    padding: 8px 10px;
+    background: var(--dash-card-alt);
+    border: 1px solid var(--dash-border);
+    border-radius: 8px;
+    color: var(--dash-text-primary);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    color-scheme: dark;
+}
+
+.dash-date-input:focus {
+    outline: none;
+    border-color: rgba(34, 211, 238, 0.5);
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.15);
+}
+
+.dash-date-input::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+    cursor: pointer;
+}
+
 /* Content sections */
 .dash-dark-section,
 .dash-charts-section {

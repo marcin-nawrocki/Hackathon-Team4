@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using Supercontrol.Web.Dashboard.Models;
@@ -11,38 +12,43 @@ namespace Supercontrol.Web.Dashboard.Controllers
             @"SELECT customercountry, COUNT(1) AS c
               FROM bookings
               LEFT JOIN customers ON bookings.customerID = customers.customerID
-              WHERE bookingdate >= '2026-07-01'
+              WHERE bookingdate >= @p0
               GROUP BY customercountry
               ORDER BY c DESC";
 
         private const string AffiliatesSql =
             @"SELECT affiliateId, COUNT(1) AS c
               FROM bookings
-              WHERE bookingdate >= '2026-07-01'
+              WHERE bookingdate >= @p0
               GROUP BY affiliateId
               ORDER BY c DESC";
 
         private const string BookingsPerHourSql =
             @"SELECT COUNT(1) AS c, HOUR(bookingdate) AS h
               FROM bookings
-              WHERE bookingdate >= '2026-07-01'
+              WHERE bookingdate >= @p0
               GROUP BY HOUR(bookingdate)
               ORDER BY c DESC";
 
-        public ActionResult Index()
+        public ActionResult Index(DateTime? fromDate)
         {
+            var filterDate = fromDate?.Date ?? new DateTime(2026, 7, 1);
+
+            ViewBag.FromDate = filterDate.ToString("yyyy-MM-dd");
+            ViewBag.FromDateDisplay = filterDate.ToString("d MMMM yyyy");
+
             using (var db = new Supercontrol2Context())
             {
                 ViewBag.TopLocations = db.Database
-                    .SqlQuery<TopLocationDto>(TopLocationsSql)
+                    .SqlQuery<TopLocationDto>(TopLocationsSql, filterDate)
                     .ToList();
 
                 ViewBag.Affiliates = db.Database
-                    .SqlQuery<AffiliateDto>(AffiliatesSql)
+                    .SqlQuery<AffiliateDto>(AffiliatesSql, filterDate)
                     .ToList();
 
                 var hourlyRaw = db.Database
-                    .SqlQuery<BookingsPerHourDto>(BookingsPerHourSql)
+                    .SqlQuery<BookingsPerHourDto>(BookingsPerHourSql, filterDate)
                     .ToList();
 
                 var hourlyLookup = hourlyRaw.ToDictionary(x => x.H, x => x.C);
