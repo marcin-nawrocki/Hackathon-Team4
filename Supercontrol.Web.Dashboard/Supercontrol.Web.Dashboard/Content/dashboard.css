@@ -72,22 +72,16 @@ body.dashboard-body {
 .dash-brand {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--dash-text-primary);
-    letter-spacing: -0.02em;
 }
 
-.dash-brand svg {
-    width: 22px;
-    height: 22px;
-    color: var(--dash-accent);
+.dash-brand-logo {
+    height: 34px;
+    width: auto;
+    display: block;
 }
 
-.dash-brand span b {
-    color: var(--dash-accent-strong);
-    font-weight: 800;
+body.dashboard-body[data-theme="dark"] .dash-brand-logo {
+    filter: invert(1);
 }
 
 .dash-header-right {
