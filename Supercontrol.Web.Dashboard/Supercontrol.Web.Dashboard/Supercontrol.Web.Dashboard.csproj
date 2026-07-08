@@ -178,6 +178,9 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Helpers\CountryCentroidLookup.cs" />
+    <Compile Include="Helpers\CountryFlag.cs" />
+    <Compile Include="Helpers\TopLocationsMapBuilder.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -210,6 +213,8 @@
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\dashboard.css" />
+    <Content Include="Content\images\supercontrol-logo.png" />
+    <Content Include="Content\data\activity-regions.json" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />

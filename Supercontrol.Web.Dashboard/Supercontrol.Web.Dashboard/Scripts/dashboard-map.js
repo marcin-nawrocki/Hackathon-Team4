@@ -3,11 +3,11 @@ var DashboardMap = (function () {
     var layers = {};
 
     var COLORS = {
-        glow: '#22d3ee',
-        high: '#99f6e4',
-        highStroke: '#ccfbf1',
-        low: '#2dd4bf',
-        lowStroke: '#115e59'
+        glow: '#7cb342',
+        high: '#7cb342',
+        highStroke: '#ffffff',
+        low: '#9ccc65',
+        lowStroke: '#ffffff'
     };
 
     function createGlowMarker(feature, latlng) {
@@ -54,7 +54,17 @@ var DashboardMap = (function () {
 
     function bindPopup(feature, layer) {
         var p = feature.properties;
-        var value = typeof p.value === 'number' ? p.value.toLocaleString() : p.value;
+
+        if (p.bookings != null) {
+            layer.bindPopup(
+                '<strong>' + p.country + '</strong><br>' +
+                'Bookings: ' + p.bookings.toLocaleString()
+            );
+            return;
+        }
+
+        var changeClass = p.change >= 0 ? 'positive' : 'negative';
+        var changeSign = p.change >= 0 ? '+' : '';
         layer.bindPopup(
             '<strong>' + p.name + '</strong><br>' +
             'Bookings: ' + value
@@ -193,7 +203,7 @@ var DashboardMap = (function () {
             maxZoom: 8
         });
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
             subdomains: 'abcd',
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
