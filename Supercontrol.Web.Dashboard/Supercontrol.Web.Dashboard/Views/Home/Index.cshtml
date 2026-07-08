@@ -11,9 +11,6 @@
 
     var maxLocation = topLocations.Count > 0 ? Math.Max(topLocations[0].C, 1) : 1;
     var activeMarkets = topLocations.Count;
-    var topMarket = topLocations.Count > 0
-        ? (string.IsNullOrWhiteSpace(topLocations[0].CustomerCountry) ? "Unknown" : topLocations[0].CustomerCountry)
-        : "—";
     var affiliateTotal = affiliates.Sum(a => a.C);
     var peakBookings = bookingsPerHour.Count > 0 ? bookingsPerHour.Max(b => b.C) : 0;
 }
@@ -87,30 +84,6 @@
         <div class="dash-stat-content">
             <div class="dash-stat-label">Daily income</div>
             <div class="dash-stat-value" id="statDailyIncome">@dailyIncome.ToString("C0")</div>
-        </div>
-    </div>
-    <div class="dash-stat-card">
-        <div class="dash-stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-            </svg>
-        </div>
-        <div class="dash-stat-content">
-            <div class="dash-stat-label">Active markets</div>
-            <div class="dash-stat-value" id="statActiveMarkets">@activeMarkets</div>
-        </div>
-    </div>
-    <div class="dash-stat-card">
-        <div class="dash-stat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="8" r="6" />
-                <path d="M8.21 13.89 7 22l5-3 5 3-1.21-8.12" />
-            </svg>
-        </div>
-        <div class="dash-stat-content">
-            <div class="dash-stat-label">Top market</div>
-            <div class="dash-stat-value" id="statTopMarket">@topMarket</div>
         </div>
     </div>
 </section>
@@ -422,8 +395,6 @@
                         setText('statTotalBookings', d.totalBookings);
 
                         var markets = d.topLocations || [];
-                        setText('statActiveMarkets', markets.length);
-                        setText('statTopMarket', markets.length ? markets[0].country : '—');
                         setText('activeMarketsPill', markets.length + ' active markets');
                         renderTopLocations(markets);
 
