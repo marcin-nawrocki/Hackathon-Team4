@@ -21,6 +21,16 @@
           crossorigin="" />
 }
 
+<script>
+    (function () {
+        try {
+            if (localStorage.getItem('dashTheme') === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+            }
+        } catch (e) { }
+    })();
+</script>
+
 <div class="dash-dashboard">
 <header class="dash-header">
     <div class="dash-brand">
@@ -56,6 +66,22 @@
             LIVE
             <span class="dash-live-clock" id="liveClock">--:--:--</span>
         </div>
+        <button type="button" class="dash-theme-toggle" id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+            <svg class="dash-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+            <svg class="dash-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+        </button>
         <div class="dash-avatar">SC</div>
     </div>
 </header>
@@ -191,9 +217,22 @@
 
             var PARTNER_COLORS = ['#1e3a8a', '#f87171', '#fbbf24', '#f59e0b', '#94a3b8', '#7cb342', '#38bdf8', '#c084fc'];
 
-            var accent = '#7cb342';
-            var gridColor = 'rgba(16, 24, 40, 0.06)';
-            var textColor = '#98a2b3';
+            function themePalette() {
+                var dark = document.body.getAttribute('data-theme') === 'dark';
+                return {
+                    accent: dark ? '#8bc34a' : '#7cb342',
+                    grid: dark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(16, 24, 40, 0.06)',
+                    text: dark ? '#7d8895' : '#98a2b3',
+                    legend: dark ? '#9aa7b4' : '#5b6675',
+                    centerLabel: dark ? '#7d8895' : '#98a2b3',
+                    centerValue: dark ? '#e6edf3' : '#1f2a37',
+                    cardBorder: dark ? '#161b22' : '#ffffff'
+                };
+            }
+            var theme = themePalette();
+            var accent = theme.accent;
+            var gridColor = theme.grid;
+            var textColor = theme.text;
 
             /* Live clock */
             var clockEl = document.getElementById('liveClock');
@@ -288,10 +327,10 @@
                     ctx.save();
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillStyle = '#98a2b3';
+                    ctx.fillStyle = theme.centerLabel;
                     ctx.font = "600 11px Inter, sans-serif";
                     ctx.fillText('Total bookings', cx, cy - 13);
-                    ctx.fillStyle = '#1f2a37';
+                    ctx.fillStyle = theme.centerValue;
                     ctx.font = "800 22px Inter, sans-serif";
                     ctx.fillText(total.toLocaleString(), cx, cy + 8);
                     ctx.restore();
@@ -305,7 +344,7 @@
                     datasets: [{
                         data: [@string.Join(", ", affiliates.Select(a => a.C))],
                         backgroundColor: PARTNER_COLORS,
-                        borderColor: '#ffffff',
+                        borderColor: theme.cardBorder,
                         borderWidth: 2,
                         hoverOffset: 6
                     }]
@@ -319,7 +358,7 @@
                         legend: {
                             position: 'bottom',
                             labels: {
-                                color: '#5b6675',
+                                color: theme.legend,
                                 font: { size: 11 },
                                 boxWidth: 8,
                                 boxHeight: 8,
@@ -413,6 +452,36 @@
                         setText('partnerSubtitle', 'Channel mix \u2014 ' + partnerTotal.toLocaleString() + ' total');
                     })
                     .catch(function () { /* ignore transient refresh errors */ });
+            }
+
+            /* Dark mode toggle */
+            function applyChartTheme() {
+                perfChart.options.scales.x.ticks.color = theme.text;
+                perfChart.options.scales.y.ticks.color = theme.text;
+                perfChart.options.scales.y.grid.color = theme.grid;
+                perfChart.data.datasets[0].borderColor = theme.accent;
+                perfChart.data.datasets[0].pointBorderColor = theme.accent;
+                perfChart.update();
+
+                affiliateChart.data.datasets[0].borderColor = theme.cardBorder;
+                affiliateChart.options.plugins.legend.labels.color = theme.legend;
+                affiliateChart.update();
+            }
+
+            var themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function () {
+                    var isDark = document.body.getAttribute('data-theme') === 'dark';
+                    if (isDark) {
+                        document.body.removeAttribute('data-theme');
+                        window.localStorage.setItem('dashTheme', 'light');
+                    } else {
+                        document.body.setAttribute('data-theme', 'dark');
+                        window.localStorage.setItem('dashTheme', 'dark');
+                    }
+                    theme = themePalette();
+                    applyChartTheme();
+                });
             }
 
             /* Auto refresh */
