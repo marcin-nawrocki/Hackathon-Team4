@@ -10,18 +10,18 @@ namespace Supercontrol.Web.Dashboard.Controllers
     public class HomeController : Controller
     {
         private const string TopLocationsSql =
-            @"SELECT customercountry, COUNT(1) AS c
+            @"SELECT NULLIF(TRIM(customercountry), '') AS customercountry, COUNT(1) AS c
               FROM bookings
               LEFT JOIN customers ON bookings.customerID = customers.customerID
               WHERE bookingdate >= @p0
-              GROUP BY customercountry
+              GROUP BY NULLIF(TRIM(customercountry), '')
               ORDER BY c DESC";
 
         private const string AffiliatesSql =
-            @"SELECT affiliateId, COUNT(1) AS c
+            @"SELECT NULLIF(TRIM(affiliateId), '') AS affiliateId, COUNT(1) AS c
               FROM bookings
               WHERE bookingdate >= @p0
-              GROUP BY affiliateId
+              GROUP BY NULLIF(TRIM(affiliateId), '')
               ORDER BY c DESC";
 
         private const string BookingsPerHourSql =

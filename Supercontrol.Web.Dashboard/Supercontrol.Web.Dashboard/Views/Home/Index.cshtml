@@ -62,6 +62,16 @@
                    value="@fromDate"
                    onchange="this.form.submit()" />
         </div>
+        <div class="dash-stat-content dash-stat-content--refresh">
+            <label class="dash-stat-label" for="refreshInterval">Auto refresh</label>
+            <select id="refreshInterval" class="dash-date-input dash-refresh-select">
+                <option value="0">Off</option>
+                @for (var s = 5; s <= 60; s += 5)
+                {
+                    <option value="@s">Every @s sec</option>
+                }
+            </select>
+        </div>
     </form>
 </section>
 
@@ -134,6 +144,38 @@
     <script src="@Url.Content("~/Scripts/dashboard-map.js")"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
+        (function () {
+            var STORAGE_KEY = 'dashRefreshInterval';
+            var select = document.getElementById('refreshInterval');
+            if (select) {
+                var saved = window.localStorage.getItem(STORAGE_KEY);
+                if (saved !== null) {
+                    select.value = saved;
+                }
+
+                var timer = null;
+                function applyInterval() {
+                    if (timer) {
+                        window.clearInterval(timer);
+                        timer = null;
+                    }
+                    var seconds = parseInt(select.value, 10);
+                    if (seconds > 0) {
+                        timer = window.setInterval(function () {
+                            window.location.reload();
+                        }, seconds * 1000);
+                    }
+                }
+
+                select.addEventListener('change', function () {
+                    window.localStorage.setItem(STORAGE_KEY, select.value);
+                    applyInterval();
+                });
+
+                applyInterval();
+            }
+        })();
+
         (function () {
             DashboardMap.init('dashMap', { center: [20, 0], zoom: 2 });
 
