@@ -10,6 +10,11 @@ namespace Supercontrol.Web.Dashboard.Helpers
 
         public static string ToGeoJson(IReadOnlyList<TopLocationDto> locations)
         {
+            return new JavaScriptSerializer().Serialize(BuildFeatureCollection(locations));
+        }
+
+        public static object BuildFeatureCollection(IReadOnlyList<TopLocationDto> locations)
+        {
             var features = new List<object>();
 
             for (var i = 0; i < locations.Count; i++)
@@ -48,13 +53,11 @@ namespace Supercontrol.Web.Dashboard.Helpers
                 });
             }
 
-            var collection = new
+            return new
             {
                 type = "FeatureCollection",
                 features = features
             };
-
-            return new JavaScriptSerializer().Serialize(collection);
         }
     }
 }

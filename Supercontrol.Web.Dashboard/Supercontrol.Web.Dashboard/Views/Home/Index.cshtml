@@ -1,4 +1,4 @@
-﻿@using Supercontrol.Web.Dashboard.Models
+@using Supercontrol.Web.Dashboard.Models
 @{
     ViewBag.Title = "Dashboard";
     var topLocations = ViewBag.TopLocations as List<TopLocationDto> ?? new List<TopLocationDto>();
@@ -27,7 +27,7 @@
         </div>
         <div class="dash-stat-content">
             <div class="dash-stat-label">Daily income</div>
-            <div class="dash-stat-value">@dailyIncome.ToString("C0")</div>
+            <div class="dash-stat-value" id="statDailyIncome">@dailyIncome.ToString("C0")</div>
         </div>
     </div>
     <div class="dash-stat-card">
@@ -41,7 +41,7 @@
         </div>
         <div class="dash-stat-content">
             <div class="dash-stat-label">Total bookings</div>
-            <div class="dash-stat-value">@totalBookings.ToString("N0")</div>
+            <div class="dash-stat-value" id="statTotalBookings">@totalBookings.ToString("N0")</div>
         </div>
     </div>
     <form method="get" action="@Url.Action("Index", "Home")" class="dash-stat-card dash-stat-card--date">
@@ -96,7 +96,7 @@
         <div class="dash-card-header">
             <h2 class="dash-card-title">Top Locations</h2>
         </div>
-        <div class="dash-locations">
+        <div class="dash-locations" id="topLocations">
             @for (var i = 0; i < topLocations.Count; i++)
             {
                 var location = topLocations[i];
@@ -145,38 +145,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
         (function () {
-            var STORAGE_KEY = 'dashRefreshInterval';
-            var select = document.getElementById('refreshInterval');
-            if (select) {
-                var saved = window.localStorage.getItem(STORAGE_KEY);
-                if (saved !== null) {
-                    select.value = saved;
-                }
+            var dataUrl = '@Url.Action("DashboardData", "Home")?fromDate=@fromDate';
 
-                var timer = null;
-                function applyInterval() {
-                    if (timer) {
-                        window.clearInterval(timer);
-                        timer = null;
-                    }
-                    var seconds = parseInt(select.value, 10);
-                    if (seconds > 0) {
-                        timer = window.setInterval(function () {
-                            window.location.reload();
-                        }, seconds * 1000);
-                    }
-                }
-
-                select.addEventListener('change', function () {
-                    window.localStorage.setItem(STORAGE_KEY, select.value);
-                    applyInterval();
-                });
-
-                applyInterval();
-            }
-        })();
-
-        (function () {
             DashboardMap.init('dashMap', { center: [20, 0], zoom: 2 });
 
             var topLocationsGeoJson = @Html.Raw(ViewBag.MapGeoJson ?? "{\"type\":\"FeatureCollection\",\"features\":[]}");
@@ -198,7 +168,7 @@
 
             var perfCtx = document.getElementById('performanceChart').getContext('2d');
 
-            new Chart(perfCtx, {
+            var perfChart = new Chart(perfCtx, {
                 type: 'bar',
                 data: {
                     labels: [@Html.Raw(string.Join(", ", bookingsPerHour.Select(b => "'" + b.H.ToString("00") + ":00'")))],
@@ -242,7 +212,7 @@
                 }
             });
 
-            new Chart(document.getElementById('affiliateChart'), {
+            var affiliateChart = new Chart(document.getElementById('affiliateChart'), {
                 type: 'bar',
                 data: {
                     labels: [@Html.Raw(string.Join(", ", affiliates.Select(a => "'" + (string.IsNullOrWhiteSpace(a.AffiliateId) ? "None" : a.AffiliateId).Replace("'", "\\'") + "'")))],
@@ -281,6 +251,91 @@
                     }
                 }
             });
+
+            function escapeHtml(value) {
+                return String(value).replace(/[&<>"']/g, function (ch) {
+                    switch (ch) {
+                        case '&': return '&amp;';
+                        case '<': return '&lt;';
+                        case '>': return '&gt;';
+                        case '"': return '&quot;';
+                        default: return '&#39;';
+                    }
+                });
+            }
+
+            function renderTopLocations(list) {
+                var container = document.getElementById('topLocations');
+                if (!container) return;
+                var html = '';
+                for (var i = 0; i < list.length; i++) {
+                    var loc = list[i];
+                    html += '<div class="dash-location-item">' +
+                        '<span class="dash-location-rank">' + loc.rank + '</span>' +
+                        '<span class="dash-location-name">' + escapeHtml(loc.country) + '</span>' +
+                        '<span class="dash-location-value">' + escapeHtml(loc.count) + '</span>' +
+                        '</div>';
+                }
+                container.innerHTML = html;
+            }
+
+            function refreshData() {
+                fetch(dataUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (response) {
+                        if (!response.ok) throw new Error('Request failed');
+                        return response.json();
+                    })
+                    .then(function (d) {
+                        var income = document.getElementById('statDailyIncome');
+                        var bookings = document.getElementById('statTotalBookings');
+                        if (income) income.textContent = d.dailyIncome;
+                        if (bookings) bookings.textContent = d.totalBookings;
+
+                        renderTopLocations(d.topLocations);
+
+                        if (topLocationsLayer) {
+                            topLocationsLayer.clearLayers();
+                            topLocationsLayer.addData(d.mapGeoJson);
+                        }
+
+                        perfChart.data.labels = d.bookingsPerHour.labels;
+                        perfChart.data.datasets[0].data = d.bookingsPerHour.data;
+                        perfChart.update();
+
+                        affiliateChart.data.labels = d.affiliates.labels;
+                        affiliateChart.data.datasets[0].data = d.affiliates.data;
+                        affiliateChart.update();
+                    })
+                    .catch(function () { /* ignore transient refresh errors */ });
+            }
+
+            var STORAGE_KEY = 'dashRefreshInterval';
+            var select = document.getElementById('refreshInterval');
+            if (select) {
+                var saved = window.localStorage.getItem(STORAGE_KEY);
+                if (saved !== null) {
+                    select.value = saved;
+                }
+
+                var timer = null;
+                function applyInterval() {
+                    if (timer) {
+                        window.clearInterval(timer);
+                        timer = null;
+                    }
+                    var seconds = parseInt(select.value, 10);
+                    if (seconds > 0) {
+                        timer = window.setInterval(refreshData, seconds * 1000);
+                    }
+                }
+
+                select.addEventListener('change', function () {
+                    window.localStorage.setItem(STORAGE_KEY, select.value);
+                    applyInterval();
+                });
+
+                applyInterval();
+            }
         })();
     </script>
 }
