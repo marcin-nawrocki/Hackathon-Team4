@@ -17,7 +17,7 @@ namespace Supercontrol.Web.Dashboard.Controllers
               GROUP BY NULLIF(TRIM(customercountry), '')
               HAVING customercountry IS NOT NULL
               ORDER BY c DESC
-              LIMIT 6";
+              LIMIT 10";
 
         private const string AffiliatesSql =
             @"SELECT NULLIF(TRIM(affiliateId), '') AS affiliateId, COUNT(1) AS c
