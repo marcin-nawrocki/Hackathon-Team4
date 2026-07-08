@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
@@ -73,7 +73,8 @@ namespace Supercontrol.Web.Dashboard.Controllers
                 {
                     rank = i + 1,
                     country = string.IsNullOrWhiteSpace(l.CustomerCountry) ? "Unknown" : l.CustomerCountry,
-                    count = l.C.ToString("N0")
+                    count = l.C.ToString("N0"),
+                    flag = CountryFlag.UrlFor(l.CustomerCountry)
                 }),
                 affiliates = new
                 {

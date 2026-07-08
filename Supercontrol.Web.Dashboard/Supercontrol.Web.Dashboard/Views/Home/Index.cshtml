@@ -1,4 +1,4 @@
-@using Supercontrol.Web.Dashboard.Models
+﻿@using Supercontrol.Web.Dashboard.Models
 @{
     ViewBag.Title = "Dashboard";
     var topLocations = ViewBag.TopLocations as List<TopLocationDto> ?? new List<TopLocationDto>();
@@ -101,9 +101,16 @@
             {
                 var location = topLocations[i];
                 var country = string.IsNullOrWhiteSpace(location.CustomerCountry) ? "Unknown" : location.CustomerCountry;
+                var flagUrl = Supercontrol.Web.Dashboard.Helpers.CountryFlag.UrlFor(location.CustomerCountry);
                 <div class="dash-location-item">
                     <span class="dash-location-rank">@(i + 1)</span>
-                    <span class="dash-location-name">@country</span>
+                    <span class="dash-location-name">
+                        @if (flagUrl != null)
+                        {
+                            <img src="@flagUrl" class="dash-flag" alt="" />
+                        }
+                        @country
+                    </span>
                     <span class="dash-location-value">@location.C.ToString("N0")</span>
                 </div>
             }
@@ -270,9 +277,12 @@
                 var html = '';
                 for (var i = 0; i < list.length; i++) {
                     var loc = list[i];
+                    var flagHtml = loc.flag
+                        ? '<img src="' + encodeURI(loc.flag) + '" class="dash-flag" alt="">'
+                        : '';
                     html += '<div class="dash-location-item">' +
                         '<span class="dash-location-rank">' + loc.rank + '</span>' +
-                        '<span class="dash-location-name">' + escapeHtml(loc.country) + '</span>' +
+                        '<span class="dash-location-name">' + flagHtml + escapeHtml(loc.country) + '</span>' +
                         '<span class="dash-location-value">' + escapeHtml(loc.count) + '</span>' +
                         '</div>';
                 }

@@ -373,6 +373,16 @@ body.dashboard-body {
     text-overflow: ellipsis;
 }
 
+.dash-flag {
+    width: 20px;
+    height: 15px;
+    margin-right: 8px;
+    border-radius: 2px;
+    vertical-align: -2px;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
 .dash-location-value {
     font-size: 13px;
     font-weight: 600;
