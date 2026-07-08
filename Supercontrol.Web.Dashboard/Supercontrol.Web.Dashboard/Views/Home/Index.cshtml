@@ -4,8 +4,8 @@
     var topLocations = ViewBag.TopLocations as List<TopLocationDto> ?? new List<TopLocationDto>();
     var affiliates = ViewBag.Affiliates as List<AffiliateDto> ?? new List<AffiliateDto>();
     var bookingsPerHour = ViewBag.BookingsPerHour as List<BookingsPerHourDto> ?? new List<BookingsPerHourDto>();
-    var fromDate = ViewBag.FromDate as string ?? "2026-07-01";
-    var fromDateDisplay = ViewBag.FromDateDisplay as string ?? "1 July 2026";
+    var fromDate = ViewBag.FromDate as string ?? DateTime.Today.ToString("yyyy-MM-dd");
+    var fromDateDisplay = ViewBag.FromDateDisplay as string ?? DateTime.Today.ToString("d MMMM yyyy");
     var totalBookings = ViewBag.TotalBookings as int? ?? 0;
     var dailyIncome = ViewBag.DailyIncome as decimal? ?? 0m;
 }

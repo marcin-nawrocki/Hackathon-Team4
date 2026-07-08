@@ -44,7 +44,7 @@ namespace Supercontrol.Web.Dashboard.Controllers
 
         public ActionResult Index(DateTime? fromDate)
         {
-            var filterDate = fromDate?.Date ?? new DateTime(2026, 7, 1);
+            var filterDate = fromDate?.Date ?? DateTime.Today;
             var data = LoadDashboardData(filterDate);
 
             ViewBag.FromDate = filterDate.ToString("yyyy-MM-dd");
@@ -61,7 +61,7 @@ namespace Supercontrol.Web.Dashboard.Controllers
 
         public ActionResult DashboardData(DateTime? fromDate)
         {
-            var filterDate = fromDate?.Date ?? new DateTime(2026, 7, 1);
+            var filterDate = fromDate?.Date ?? DateTime.Today;
             var data = LoadDashboardData(filterDate);
 
             var payload = new
