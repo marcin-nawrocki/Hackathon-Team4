@@ -54,13 +54,130 @@ var DashboardMap = (function () {
 
     function bindPopup(feature, layer) {
         var p = feature.properties;
-        var changeClass = p.change >= 0 ? 'positive' : 'negative';
-        var changeSign = p.change >= 0 ? '+' : '';
+        var value = typeof p.value === 'number' ? p.value.toLocaleString() : p.value;
         layer.bindPopup(
-            '<strong>' + p.name + '</strong> (' + p.country + ')<br>' +
-            'Value: ' + p.value.toLocaleString() + '<br>' +
-            'Change: <span class="' + changeClass + '">' + changeSign + p.change + '%</span>'
+            '<strong>' + p.name + '</strong><br>' +
+            'Bookings: ' + value
         );
+    }
+
+    // Choropleth fill color scaled by booking volume for a country.
+    function getChoroplethColor(value) {
+        return value >= 10000 ? '#99f6e4' :
+               value >= 4000  ? '#5eead4' :
+               value >= 2000  ? '#2dd4bf' :
+               value >= 1000  ? '#14b8a6' :
+               value > 0      ? '#0d9488' :
+                                'transparent';
+    }
+
+    // Normalizes a country name so DB values and polygon names can be matched.
+    function normalizeCountry(name) {
+        var key = (name || '').toString().trim().toLowerCase();
+        var aliases = {
+            'usa': 'united states of america',
+            'us': 'united states of america',
+            'united states': 'united states of america',
+            'america': 'united states of america',
+            'uk': 'united kingdom',
+            'gb': 'united kingdom',
+            'great britain': 'united kingdom',
+            'england': 'united kingdom',
+            'scotland': 'united kingdom',
+            'wales': 'united kingdom',
+            'russia': 'russia',
+            'russian federation': 'russia',
+            'south korea': 'south korea',
+            'republic of korea': 'south korea',
+            'korea': 'south korea',
+            'czech republic': 'czechia',
+            'uae': 'united arab emirates',
+            'holland': 'netherlands',
+            'the netherlands': 'netherlands',
+            'serbia': 'republic of serbia'
+        };
+        return aliases.hasOwnProperty(key) ? aliases[key] : key;
+    }
+
+    // Rolls the real Top Locations rows up to a per-country total keyed by normalized name.
+    function aggregateByCountry(locations) {
+        var agg = {};
+        (locations || []).forEach(function (loc) {
+            var key = normalizeCountry(loc.name);
+            if (!key) return;
+            if (!agg[key]) agg[key] = { name: loc.name, value: 0 };
+            agg[key].value += loc.value || 0;
+        });
+        return agg;
+    }
+
+    // Caches the fetched country-polygon GeoJSON so live refreshes only restyle.
+    var countryPolygons = null;
+
+    // Highlights whole countries (polygons) shaded by real booking volume.
+    // countriesUrl must resolve to a GeoJSON of country polygons whose
+    // feature.properties.name is the country's English name.
+    function renderCountryHighlights(name, countriesUrl, locations) {
+        if (!map) return Promise.reject('Map not initialized');
+
+        var polygonsPromise = countryPolygons
+            ? Promise.resolve(countryPolygons)
+            : fetch(countriesUrl).then(function (r) { return r.json(); }).then(function (data) {
+                countryPolygons = data;
+                return data;
+            });
+
+        return polygonsPromise.then(function (countries) {
+            drawCountryHighlights(name, countries, locations);
+            return layers[name];
+        });
+    }
+
+    function drawCountryHighlights(name, countries, locations) {
+        var agg = aggregateByCountry(locations);
+
+        function dataFor(feature) {
+            return agg[normalizeCountry(feature.properties && feature.properties.name)] || null;
+        }
+
+        function styleFor(feature) {
+            var data = dataFor(feature);
+            var value = data ? data.value : 0;
+            return {
+                fillColor: getChoroplethColor(value),
+                fillOpacity: value > 0 ? 0.78 : 0,
+                color: value > 0 ? COLORS.glow : 'rgba(255,255,255,0.06)',
+                weight: value > 0 ? 1 : 0.5,
+                opacity: value > 0 ? 0.9 : 0.25
+            };
+        }
+
+        removeLayer(name);
+
+        var layer = L.geoJSON(countries, {
+            style: styleFor,
+            onEachFeature: function (feature, lyr) {
+                var data = dataFor(feature);
+                if (!data) return;
+
+                lyr.bindPopup(
+                    '<strong>' + data.name + '</strong><br>' +
+                    'Bookings: ' + Math.round(data.value).toLocaleString()
+                );
+
+                lyr.on({
+                    mouseover: function (e) {
+                        e.target.setStyle({ weight: 2, fillOpacity: 0.92, color: COLORS.highStroke });
+                        e.target.bringToFront();
+                    },
+                    mouseout: function (e) { layer.resetStyle(e.target); }
+                });
+            }
+        });
+
+        layer.addTo(map);
+        layers[name] = layer;
+        return layer;
     }
 
     function init(containerId, options) {
@@ -147,6 +264,7 @@ var DashboardMap = (function () {
         init: init,
         addGeoJsonLayer: addGeoJsonLayer,
         addGeoJsonData: addGeoJsonData,
+        renderCountryHighlights: renderCountryHighlights,
         getLayer: getLayer,
         removeLayer: removeLayer,
         getMap: function () { return map; },
