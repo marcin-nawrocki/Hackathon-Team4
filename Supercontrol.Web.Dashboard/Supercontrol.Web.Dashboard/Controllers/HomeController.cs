@@ -15,14 +15,18 @@ namespace Supercontrol.Web.Dashboard.Controllers
               LEFT JOIN customers ON bookings.customerID = customers.customerID
               WHERE bookingdate >= @p0
               GROUP BY NULLIF(TRIM(customercountry), '')
+              HAVING customercountry IS NOT NULL
               ORDER BY c DESC";
 
         private const string AffiliatesSql =
             @"SELECT NULLIF(TRIM(affiliateId), '') AS affiliateId, COUNT(1) AS c
               FROM bookings
               WHERE bookingdate >= @p0
+                AND TRIM(affiliateId) <> 'ImportAvailabilityService'
               GROUP BY NULLIF(TRIM(affiliateId), '')
-              ORDER BY c DESC";
+              HAVING affiliateId IS NOT NULL
+              ORDER BY c DESC
+              LIMIT 5";
 
         private const string BookingsPerHourSql =
             @"SELECT COUNT(1) AS c, HOUR(bookingdate) AS h

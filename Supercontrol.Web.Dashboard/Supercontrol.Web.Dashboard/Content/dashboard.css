@@ -64,7 +64,7 @@ body.dashboard-body {
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: var(--dash-accent-dim);
+    background: rgba(34, 211, 238, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -74,7 +74,7 @@ body.dashboard-body {
 .dash-stat-icon svg {
     width: 20px;
     height: 20px;
-    color: var(--dash-accent);
+    color: #22d3ee;
 }
 
 .dash-stat-content {
