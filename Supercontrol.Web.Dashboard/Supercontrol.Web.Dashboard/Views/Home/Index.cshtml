@@ -208,15 +208,12 @@
             tickClock();
             window.setInterval(tickClock, 1000);
 
-            /* Map */
-            DashboardMap.init('dashMap', { center: [30, 5], zoom: 2 });
+            /* Map centered on the United Kingdom */
+            DashboardMap.init('dashMap', { center: [54.0, -2.0], zoom: 5 });
 
             var topLocationsGeoJson = @Html.Raw(ViewBag.MapGeoJson ?? "{\"type\":\"FeatureCollection\",\"features\":[]}");
             var topLocationsLayer = DashboardMap.addGeoJsonData('topLocations', topLocationsGeoJson);
             var map = DashboardMap.getMap();
-            if (map && topLocationsLayer && topLocationsLayer.getBounds().isValid()) {
-                map.fitBounds(topLocationsLayer.getBounds(), { padding: [40, 40], maxZoom: 4 });
-            }
 
             DashboardMap.invalidateSize();
             window.setTimeout(function () { DashboardMap.invalidateSize(); }, 200);
