@@ -54,6 +54,15 @@ var DashboardMap = (function () {
 
     function bindPopup(feature, layer) {
         var p = feature.properties;
+
+        if (p.bookings != null) {
+            layer.bindPopup(
+                '<strong>' + p.country + '</strong><br>' +
+                'Bookings: ' + p.bookings.toLocaleString()
+            );
+            return;
+        }
+
         var changeClass = p.change >= 0 ? 'positive' : 'negative';
         var changeSign = p.change >= 0 ? '+' : '';
         layer.bindPopup(

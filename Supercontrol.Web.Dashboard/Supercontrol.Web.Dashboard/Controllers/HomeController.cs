@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
+using Supercontrol.Web.Dashboard.Helpers;
 using Supercontrol.Web.Dashboard.Models;
 
 namespace Supercontrol.Web.Dashboard.Controllers
@@ -58,9 +59,12 @@ namespace Supercontrol.Web.Dashboard.Controllers
                     .SqlQuery<TotalBookingsDto>(TotalBookingsSql, filterDate)
                     .FirstOrDefault()?.H ?? 0;
 
-                ViewBag.TopLocations = db.Database
+                var topLocations = db.Database
                     .SqlQuery<TopLocationDto>(TopLocationsSql, filterDate)
                     .ToList();
+
+                ViewBag.TopLocations = topLocations;
+                ViewBag.MapGeoJson = TopLocationsMapBuilder.ToGeoJson(topLocations);
 
                 ViewBag.Affiliates = db.Database
                     .SqlQuery<AffiliateDto>(AffiliatesSql, filterDate)
