@@ -16,7 +16,8 @@ namespace Supercontrol.Web.Dashboard.Controllers
               WHERE bookingdate >= @p0
               GROUP BY NULLIF(TRIM(customercountry), '')
               HAVING customercountry IS NOT NULL
-              ORDER BY c DESC";
+              ORDER BY c DESC
+              LIMIT 10";
 
         private const string AffiliatesSql =
             @"SELECT NULLIF(TRIM(affiliateId), '') AS affiliateId, COUNT(1) AS c
@@ -78,6 +79,7 @@ namespace Supercontrol.Web.Dashboard.Controllers
                     rank = i + 1,
                     country = string.IsNullOrWhiteSpace(l.CustomerCountry) ? "Unknown" : l.CustomerCountry,
                     count = l.C.ToString("N0"),
+                    value = l.C,
                     flag = CountryFlag.UrlFor(l.CustomerCountry)
                 }),
                 affiliates = new

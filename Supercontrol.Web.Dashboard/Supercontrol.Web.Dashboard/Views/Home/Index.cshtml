@@ -8,6 +8,14 @@
     var fromDateDisplay = ViewBag.FromDateDisplay as string ?? DateTime.Today.ToString("d MMMM yyyy");
     var totalBookings = ViewBag.TotalBookings as int? ?? 0;
     var dailyIncome = ViewBag.DailyIncome as decimal? ?? 0m;
+
+    var maxLocation = topLocations.Count > 0 ? Math.Max(topLocations[0].C, 1) : 1;
+    var activeMarkets = topLocations.Count;
+    var topMarket = topLocations.Count > 0
+        ? (string.IsNullOrWhiteSpace(topLocations[0].CustomerCountry) ? "Unknown" : topLocations[0].CustomerCountry)
+        : "—";
+    var affiliateTotal = affiliates.Sum(a => a.C);
+    var peakBookings = bookingsPerHour.Count > 0 ? bookingsPerHour.Max(b => b.C) : 0;
 }
 
 @section styles {
@@ -17,12 +25,63 @@
 }
 
 <div class="dash-dashboard">
+<header class="dash-header">
+    <div class="dash-brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 1 0 10 10" />
+            <path d="M12 2a10 10 0 0 1 10 10" />
+            <path d="M2 12a10 10 0 0 0 10 10" />
+        </svg>
+        <span>super<b>control</b></span>
+    </div>
+    <div class="dash-header-right">
+        <form method="get" action="@Url.Action("Index", "Home")" class="dash-header-control">
+            <label for="fromDate">From</label>
+            <input type="date"
+                   id="fromDate"
+                   name="fromDate"
+                   class="dash-date-input"
+                   value="@fromDate"
+                   onchange="this.form.submit()" />
+        </form>
+        <div class="dash-header-control">
+            <label for="refreshInterval">Refresh</label>
+            <select id="refreshInterval" class="dash-date-input dash-refresh-select">
+                <option value="0">Off</option>
+                @for (var s = 5; s <= 60; s += 5)
+                {
+                    <option value="@s">Every @s sec</option>
+                }
+            </select>
+        </div>
+        <div class="dash-live">
+            <span class="dash-live-dot"></span>
+            LIVE
+            <span class="dash-live-clock" id="liveClock">--:--:--</span>
+        </div>
+        <div class="dash-avatar">SC</div>
+    </div>
+</header>
+
 <section class="dash-stats">
     <div class="dash-stat-card">
         <div class="dash-stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="1" x2="12" y2="23" />
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+        </div>
+        <div class="dash-stat-content">
+            <div class="dash-stat-label">Total bookings</div>
+            <div class="dash-stat-value" id="statTotalBookings">@totalBookings.ToString("N0")</div>
+        </div>
+    </div>
+    <div class="dash-stat-card">
+        <div class="dash-stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                <polyline points="17 6 23 6 23 12" />
             </svg>
         </div>
         <div class="dash-stat-content">
@@ -33,68 +92,59 @@
     <div class="dash-stat-card">
         <div class="dash-stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                <line x1="9" y1="12" x2="15" y2="12" />
-                <line x1="9" y1="16" x2="15" y2="16" />
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
             </svg>
         </div>
         <div class="dash-stat-content">
-            <div class="dash-stat-label">Total bookings</div>
-            <div class="dash-stat-value" id="statTotalBookings">@totalBookings.ToString("N0")</div>
+            <div class="dash-stat-label">Active markets</div>
+            <div class="dash-stat-value" id="statActiveMarkets">@activeMarkets</div>
         </div>
     </div>
-    <form method="get" action="@Url.Action("Index", "Home")" class="dash-stat-card dash-stat-card--date">
+    <div class="dash-stat-card">
         <div class="dash-stat-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
+                <circle cx="12" cy="8" r="6" />
+                <path d="M8.21 13.89 7 22l5-3 5 3-1.21-8.12" />
             </svg>
         </div>
         <div class="dash-stat-content">
-            <label class="dash-stat-label" for="fromDate">From date</label>
-            <input type="date"
-                   id="fromDate"
-                   name="fromDate"
-                   class="dash-date-input"
-                   value="@fromDate"
-                   onchange="this.form.submit()" />
+            <div class="dash-stat-label">Top market</div>
+            <div class="dash-stat-value" id="statTopMarket">@topMarket</div>
         </div>
-        <div class="dash-stat-content dash-stat-content--refresh">
-            <label class="dash-stat-label" for="refreshInterval">Auto refresh</label>
-            <select id="refreshInterval" class="dash-date-input dash-refresh-select">
-                <option value="0">Off</option>
-                @for (var s = 5; s <= 60; s += 5)
-                {
-                    <option value="@s">Every @s sec</option>
-                }
-            </select>
-        </div>
-    </form>
+    </div>
 </section>
 
 <section class="dash-dark-section">
     <div class="dash-dark-card">
         <div class="dash-card-header">
-            <h2 class="dash-card-title">Global Booking Origins</h2>
-            <div class="dash-legend dash-map-legend">
-                <span class="dash-legend-item">
-                    <span class="dash-legend-dot high"></span> High volume
-                </span>
-                <span class="dash-legend-item">
-                    <span class="dash-legend-dot low"></span> Low volume
+            <div>
+                <h2 class="dash-card-title">Booking Origins</h2>
+                <div class="dash-card-subtitle">Live geographic distribution of inbound reservations</div>
+            </div>
+            <div class="dash-legend">
+                <span class="dash-legend-pill">
+                    <span class="dash-legend-dot"></span>
+                    <span id="activeMarketsPill">@activeMarkets active markets</span>
                 </span>
             </div>
         </div>
-        <div class="dash-map-container">
-            <div id="dashMap" class="dash-map"></div>
+        <div class="dash-map-wrap">
+            <div class="dash-map-container">
+                <div id="dashMap" class="dash-map"></div>
+            </div>
+            <span class="dash-map-caption">
+                <span class="dash-legend-dot"></span>
+                Booking origin size volume
+            </span>
         </div>
     </div>
     <div class="dash-dark-card">
         <div class="dash-card-header">
-            <h2 class="dash-card-title">Top Locations</h2>
+            <div>
+                <h2 class="dash-card-title">Top 10 Markets</h2>
+                <div class="dash-card-subtitle">Ranked by live booking volume</div>
+            </div>
         </div>
         <div class="dash-locations" id="topLocations">
             @for (var i = 0; i < topLocations.Count; i++)
@@ -102,15 +152,15 @@
                 var location = topLocations[i];
                 var country = string.IsNullOrWhiteSpace(location.CustomerCountry) ? "Unknown" : location.CustomerCountry;
                 var flagUrl = Supercontrol.Web.Dashboard.Helpers.CountryFlag.UrlFor(location.CustomerCountry);
+                var barWidth = (int)Math.Round(location.C * 100.0 / maxLocation);
                 <div class="dash-location-item">
-                    <span class="dash-location-rank">@(i + 1)</span>
-                    <span class="dash-location-name">
-                        @if (flagUrl != null)
-                        {
-                            <img src="@flagUrl" class="dash-flag" alt="" />
-                        }
-                        @country
-                    </span>
+                    <span class="dash-location-rank">#@(i + 1)</span>
+                    @if (flagUrl != null)
+                    {
+                        <img src="@flagUrl" class="dash-flag" alt="" />
+                    }
+                    <span class="dash-location-name">@country</span>
+                    <span class="dash-location-bar"><span class="dash-location-bar-fill" style="width:@(barWidth)%"></span></span>
                     <span class="dash-location-value">@location.C.ToString("N0")</span>
                 </div>
             }
@@ -123,7 +173,11 @@
         <div class="dash-card-header">
             <div>
                 <h2 class="dash-card-title">Bookings per hour</h2>
-                <div class="dash-card-subtitle">Booking volume by hour from @fromDateDisplay</div>
+                <div class="dash-card-subtitle">Hourly booking volume from @fromDateDisplay</div>
+            </div>
+            <div class="dash-card-metric">
+                <div class="dash-card-metric-value" id="peakBookings">@peakBookings.ToString("N0")</div>
+                <div class="dash-card-metric-label">peak hour</div>
             </div>
         </div>
         <div class="dash-chart-container">
@@ -133,8 +187,8 @@
     <div class="dash-dark-card">
         <div class="dash-card-header">
             <div>
-                <h2 class="dash-card-title">Affiliates</h2>
-                <div class="dash-card-subtitle">Bookings by affiliate from @fromDateDisplay</div>
+                <h2 class="dash-card-title">Bookings by Partner</h2>
+                <div class="dash-card-subtitle" id="partnerSubtitle">Channel mix — @affiliateTotal.ToString("N0") total</div>
             </div>
         </div>
         <div class="dash-chart-container">
@@ -142,6 +196,14 @@
         </div>
     </div>
 </section>
+
+<footer class="dash-footer">
+    <div class="dash-footer-left">
+        <span class="dash-live-dot"></span>
+        Supercontrol Analytics &middot; Live data stream
+    </div>
+    <div>&copy; @DateTime.Now.Year Supercontrol Ltd &middot; All rights reserved</div>
+</footer>
 </div>
 
 @section scripts {
@@ -154,7 +216,27 @@
         (function () {
             var dataUrl = '@Url.Action("DashboardData", "Home")?fromDate=@fromDate';
 
-            DashboardMap.init('dashMap', { center: [20, 0], zoom: 2 });
+            var PARTNER_COLORS = ['#1e3a8a', '#f87171', '#fbbf24', '#f59e0b', '#94a3b8', '#7cb342', '#38bdf8', '#c084fc'];
+
+            var accent = '#7cb342';
+            var gridColor = 'rgba(16, 24, 40, 0.06)';
+            var textColor = '#98a2b3';
+
+            /* Live clock */
+            var clockEl = document.getElementById('liveClock');
+            function tickClock() {
+                if (!clockEl) return;
+                var now = new Date();
+                clockEl.textContent =
+                    ('0' + now.getHours()).slice(-2) + ':' +
+                    ('0' + now.getMinutes()).slice(-2) + ':' +
+                    ('0' + now.getSeconds()).slice(-2);
+            }
+            tickClock();
+            window.setInterval(tickClock, 1000);
+
+            /* Map */
+            DashboardMap.init('dashMap', { center: [30, 5], zoom: 2 });
 
             var topLocationsGeoJson = @Html.Raw(ViewBag.MapGeoJson ?? "{\"type\":\"FeatureCollection\",\"features\":[]}");
             var topLocationsLayer = DashboardMap.addGeoJsonData('topLocations', topLocationsGeoJson);
@@ -164,29 +246,36 @@
             }
 
             DashboardMap.invalidateSize();
+            window.setTimeout(function () { DashboardMap.invalidateSize(); }, 200);
 
             window.addEventListener('resize', function () {
-                var map = DashboardMap.getMap();
-                if (map) map.invalidateSize();
+                var m = DashboardMap.getMap();
+                if (m) m.invalidateSize();
             });
 
-            var gridColor = 'rgba(255,255,255,0.06)';
-            var textColor = '#9ca3af';
-
+            /* Area chart */
             var perfCtx = document.getElementById('performanceChart').getContext('2d');
+            var perfGradient = perfCtx.createLinearGradient(0, 0, 0, 260);
+            perfGradient.addColorStop(0, 'rgba(124, 179, 66, 0.35)');
+            perfGradient.addColorStop(1, 'rgba(124, 179, 66, 0.02)');
 
             var perfChart = new Chart(perfCtx, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: [@Html.Raw(string.Join(", ", bookingsPerHour.Select(b => "'" + b.H.ToString("00") + ":00'")))],
                     datasets: [{
                         label: 'Bookings',
                         data: [@string.Join(", ", bookingsPerHour.Select(b => b.C))],
-                        backgroundColor: 'rgba(34, 211, 238, 0.75)',
-                        hoverBackgroundColor: '#5eead4',
-                        borderColor: '#22d3ee',
-                        borderWidth: 1,
-                        borderRadius: 3
+                        borderColor: accent,
+                        backgroundColor: perfGradient,
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: accent,
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 5
                     }]
                 },
                 options: {
@@ -196,12 +285,8 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                title: function (items) {
-                                    return items.length ? items[0].label : '';
-                                },
-                                label: function (ctx) {
-                                    return ctx.parsed.y.toLocaleString() + ' bookings';
-                                }
+                                title: function (items) { return items.length ? items[0].label : ''; },
+                                label: function (ctx) { return ctx.parsed.y.toLocaleString() + ' bookings'; }
                             }
                         }
                     },
@@ -212,6 +297,7 @@
                         },
                         y: {
                             grid: { color: gridColor },
+                            border: { display: false },
                             ticks: { color: textColor, font: { size: 11 } },
                             beginAtZero: true
                         }
@@ -219,46 +305,73 @@
                 }
             });
 
+            /* Doughnut chart with center total */
+            var centerTextPlugin = {
+                id: 'centerText',
+                afterDraw: function (chart) {
+                    var area = chart.chartArea;
+                    if (!area) return;
+                    var ctx = chart.ctx;
+                    var cx = (area.left + area.right) / 2;
+                    var cy = (area.top + area.bottom) / 2;
+                    var total = chart.data.datasets[0].data.reduce(function (a, b) { return a + b; }, 0);
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#98a2b3';
+                    ctx.font = "600 11px Inter, sans-serif";
+                    ctx.fillText('Total bookings', cx, cy - 13);
+                    ctx.fillStyle = '#1f2a37';
+                    ctx.font = "800 22px Inter, sans-serif";
+                    ctx.fillText(total.toLocaleString(), cx, cy + 8);
+                    ctx.restore();
+                }
+            };
+
             var affiliateChart = new Chart(document.getElementById('affiliateChart'), {
-                type: 'bar',
+                type: 'doughnut',
                 data: {
                     labels: [@Html.Raw(string.Join(", ", affiliates.Select(a => "'" + (string.IsNullOrWhiteSpace(a.AffiliateId) ? "None" : a.AffiliateId).Replace("'", "\\'") + "'")))],
                     datasets: [{
                         data: [@string.Join(", ", affiliates.Select(a => a.C))],
-                        backgroundColor: 'rgba(34, 211, 238, 0.75)',
-                        hoverBackgroundColor: '#5eead4',
-                        borderColor: '#22d3ee',
-                        borderWidth: 1,
-                        borderRadius: 4,
-                        borderSkipped: false
+                        backgroundColor: PARTNER_COLORS,
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        hoverOffset: 6
                     }]
                 },
                 options: {
-                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
+                    cutout: '68%',
+                    layout: { padding: 6 },
                     plugins: {
-                        legend: { display: false },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#5b6675',
+                                font: { size: 11 },
+                                boxWidth: 8,
+                                boxHeight: 8,
+                                usePointStyle: true,
+                                padding: 12
+                            }
+                        },
                         tooltip: {
                             callbacks: {
-                                label: function (ctx) { return ctx.parsed.x.toLocaleString() + ' bookings'; }
+                                label: function (ctx) {
+                                    var total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+                                    var pct = total ? Math.round(ctx.parsed / total * 1000) / 10 : 0;
+                                    return ctx.label + ': ' + ctx.parsed.toLocaleString() + ' (' + pct + '%)';
+                                }
                             }
                         }
-                    },
-                    scales: {
-                        x: {
-                            grid: { color: gridColor },
-                            ticks: { color: textColor, font: { size: 11 } },
-                            beginAtZero: true
-                        },
-                        y: {
-                            grid: { display: false },
-                            ticks: { color: textColor, font: { size: 11 } }
-                        }
                     }
-                }
+                },
+                plugins: [centerTextPlugin]
             });
 
+            /* Helpers */
             function escapeHtml(value) {
                 return String(value).replace(/[&<>"']/g, function (ch) {
                     switch (ch) {
@@ -274,19 +387,28 @@
             function renderTopLocations(list) {
                 var container = document.getElementById('topLocations');
                 if (!container) return;
+                var max = list.length ? Math.max(list[0].value, 1) : 1;
                 var html = '';
                 for (var i = 0; i < list.length; i++) {
                     var loc = list[i];
                     var flagHtml = loc.flag
                         ? '<img src="' + encodeURI(loc.flag) + '" class="dash-flag" alt="">'
                         : '';
+                    var width = Math.round(loc.value * 100 / max);
                     html += '<div class="dash-location-item">' +
-                        '<span class="dash-location-rank">' + loc.rank + '</span>' +
-                        '<span class="dash-location-name">' + flagHtml + escapeHtml(loc.country) + '</span>' +
+                        '<span class="dash-location-rank">#' + loc.rank + '</span>' +
+                        flagHtml +
+                        '<span class="dash-location-name">' + escapeHtml(loc.country) + '</span>' +
+                        '<span class="dash-location-bar"><span class="dash-location-bar-fill" style="width:' + width + '%"></span></span>' +
                         '<span class="dash-location-value">' + escapeHtml(loc.count) + '</span>' +
                         '</div>';
                 }
                 container.innerHTML = html;
+            }
+
+            function setText(id, value) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = value;
             }
 
             function refreshData() {
@@ -296,12 +418,14 @@
                         return response.json();
                     })
                     .then(function (d) {
-                        var income = document.getElementById('statDailyIncome');
-                        var bookings = document.getElementById('statTotalBookings');
-                        if (income) income.textContent = d.dailyIncome;
-                        if (bookings) bookings.textContent = d.totalBookings;
+                        setText('statDailyIncome', d.dailyIncome);
+                        setText('statTotalBookings', d.totalBookings);
 
-                        renderTopLocations(d.topLocations);
+                        var markets = d.topLocations || [];
+                        setText('statActiveMarkets', markets.length);
+                        setText('statTopMarket', markets.length ? markets[0].country : '—');
+                        setText('activeMarketsPill', markets.length + ' active markets');
+                        renderTopLocations(markets);
 
                         if (topLocationsLayer) {
                             topLocationsLayer.clearLayers();
@@ -311,14 +435,19 @@
                         perfChart.data.labels = d.bookingsPerHour.labels;
                         perfChart.data.datasets[0].data = d.bookingsPerHour.data;
                         perfChart.update();
+                        var peak = d.bookingsPerHour.data.length ? Math.max.apply(null, d.bookingsPerHour.data) : 0;
+                        setText('peakBookings', peak.toLocaleString());
 
                         affiliateChart.data.labels = d.affiliates.labels;
                         affiliateChart.data.datasets[0].data = d.affiliates.data;
                         affiliateChart.update();
+                        var partnerTotal = d.affiliates.data.reduce(function (a, b) { return a + b; }, 0);
+                        setText('partnerSubtitle', 'Channel mix \u2014 ' + partnerTotal.toLocaleString() + ' total');
                     })
                     .catch(function () { /* ignore transient refresh errors */ });
             }
 
+            /* Auto refresh */
             var STORAGE_KEY = 'dashRefreshInterval';
             var select = document.getElementById('refreshInterval');
             if (select) {
